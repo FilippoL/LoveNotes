@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,8 +11,6 @@ import {
 } from 'react-native';
 import { Audio } from 'expo-av';
 import * as Sharing from 'expo-sharing';
-import * as MediaLibrary from 'expo-media-library';
-import ViewShot from 'react-native-view-shot';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { usePartner } from '../contexts/PartnerContext';
@@ -31,7 +29,6 @@ export default function ViewCardScreen({ route, navigation }: any) {
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [savingImage, setSavingImage] = useState(false);
-  const viewShotRef = useRef<ViewShot>(null);
 
   useEffect(() => {
     loadCard();
@@ -143,42 +140,33 @@ export default function ViewCardScreen({ route, navigation }: any) {
   };
 
   const handleSaveAsImage = async () => {
-    if (!viewShotRef.current) return;
+    if (!card || !decryptedContent) {
+      Alert.alert('Error', 'Card content not available');
+      return;
+    }
 
     setSavingImage(true);
     try {
-      // Request media library permissions
-      if (Platform.OS !== 'web') {
-        const { status } = await MediaLibrary.requestPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Permission Denied', 'Please grant media library permission to save images');
-          setSavingImage(false);
-          return;
-        }
-      }
-
-      // Capture the card view as an image
-      const uri = await viewShotRef.current.capture();
+      // Create a text representation of the card
+      const cardText = card.contentType === 'text'
+        ? decryptedContent
+        : 'Voice Message Card';
       
-      if (!uri) {
-        throw new Error('Failed to capture image');
-      }
+      const date = new Date(card.createdAt).toLocaleDateString();
+      const shareText = `LoveNotes Card\n\n${cardText}\n\nDate: ${date}${card.templateUsed ? `\nTemplate: ${card.templateUsed}` : ''}`;
 
-      // Save to media library
-      if (Platform.OS !== 'web') {
-        await MediaLibrary.createAssetAsync(uri);
-        Alert.alert('Success', 'Card saved to your photos!');
+      // Share the card content
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync({
+          message: shareText,
+          mimeType: 'text/plain',
+        });
       } else {
-        // On web, use sharing instead
-        if (await Sharing.isAvailableAsync()) {
-          await Sharing.shareAsync(uri);
-        } else {
-          Alert.alert('Success', 'Image captured. Please save it manually.');
-        }
+        Alert.alert('Sharing Unavailable', 'Sharing is not available on this device');
       }
     } catch (error: any) {
-      console.error('Error saving image:', error);
-      Alert.alert('Error', error.message || 'Failed to save image');
+      console.error('Error sharing card:', error);
+      Alert.alert('Error', error.message || 'Failed to share card');
     } finally {
       setSavingImage(false);
     }
@@ -199,7 +187,6 @@ export default function ViewCardScreen({ route, navigation }: any) {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 0.9 }} style={styles.shotContainer}>
         <View style={styles.card}>
         {card.contentType === 'text' ? (
           <Text style={styles.cardText}>{decryptedContent || 'Loading...'}</Text>
@@ -234,7 +221,6 @@ export default function ViewCardScreen({ route, navigation }: any) {
           {new Date(card.createdAt).toLocaleDateString()}
         </Text>
         </View>
-      </ViewShot>
 
       <TouchableOpacity
         style={[styles.saveButton, savingImage && styles.saveButtonDisabled]}
@@ -268,9 +254,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 24,
-  },
-  shotContainer: {
-    backgroundColor: 'transparent',
   },
   card: {
     backgroundColor: '#f9fafb',
