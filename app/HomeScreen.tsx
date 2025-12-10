@@ -124,6 +124,7 @@ export default function HomeScreen({ navigation }: any) {
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Text style={styles.settingsIcon}>⚙️</Text>
+            <Text style={styles.settingsLabel}>Settings</Text>
           </TouchableOpacity>
         </View>
         {partner && (
@@ -209,17 +210,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   settingsIconButton: {
-    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
     marginLeft: 16,
     backgroundColor: '#f3f4f6',
     borderRadius: 20,
-    minWidth: 40,
-    minHeight: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   settingsIcon: {
-    fontSize: 28,
+    fontSize: 20,
+    marginRight: 4,
+  },
+  settingsLabel: {
+    fontSize: 14,
+    color: '#6366f1',
+    fontWeight: '600',
   },
   partnerName: {
     fontSize: 16,
