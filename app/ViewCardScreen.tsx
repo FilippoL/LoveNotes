@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,12 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { Audio } from 'expo-av';
 import * as Sharing from 'expo-sharing';
+import * as MediaLibrary from 'expo-media-library';
+import ViewShot from 'react-native-view-shot';
 import { useAuth } from '../contexts/AuthContext';
 import { usePartner } from '../contexts/PartnerContext';
 import { cardService } from '../services/cards';
@@ -26,6 +29,8 @@ export default function ViewCardScreen({ route, navigation }: any) {
   const [loading, setLoading] = useState(true);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [savingImage, setSavingImage] = useState(false);
+  const viewShotRef = useRef<ViewShot>(null);
 
   useEffect(() => {
     loadCard();
@@ -137,7 +142,45 @@ export default function ViewCardScreen({ route, navigation }: any) {
   };
 
   const handleSaveAsImage = async () => {
-    Alert.alert('Coming Soon', 'Save as image feature will be available in a future update');
+    if (!viewShotRef.current) return;
+
+    setSavingImage(true);
+    try {
+      // Request media library permissions
+      if (Platform.OS !== 'web') {
+        const { status } = await MediaLibrary.requestPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission Denied', 'Please grant media library permission to save images');
+          setSavingImage(false);
+          return;
+        }
+      }
+
+      // Capture the card view as an image
+      const uri = await viewShotRef.current.capture();
+      
+      if (!uri) {
+        throw new Error('Failed to capture image');
+      }
+
+      // Save to media library
+      if (Platform.OS !== 'web') {
+        await MediaLibrary.createAssetAsync(uri);
+        Alert.alert('Success', 'Card saved to your photos!');
+      } else {
+        // On web, use sharing instead
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(uri);
+        } else {
+          Alert.alert('Success', 'Image captured. Please save it manually.');
+        }
+      }
+    } catch (error: any) {
+      console.error('Error saving image:', error);
+      Alert.alert('Error', error.message || 'Failed to save image');
+    } finally {
+      setSavingImage(false);
+    }
   };
 
   if (loading) {
@@ -154,7 +197,8 @@ export default function ViewCardScreen({ route, navigation }: any) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.card}>
+      <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 0.9 }} style={styles.shotContainer}>
+        <View style={styles.card}>
         {card.contentType === 'text' ? (
           <Text style={styles.cardText}>{decryptedContent || 'Loading...'}</Text>
         ) : (
@@ -187,13 +231,19 @@ export default function ViewCardScreen({ route, navigation }: any) {
         <Text style={styles.dateLabel}>
           {new Date(card.createdAt).toLocaleDateString()}
         </Text>
-      </View>
+        </View>
+      </ViewShot>
 
       <TouchableOpacity
-        style={styles.saveButton}
+        style={[styles.saveButton, savingImage && styles.saveButtonDisabled]}
         onPress={handleSaveAsImage}
+        disabled={savingImage}
       >
-        <Text style={styles.saveButtonText}>Save as Image</Text>
+        {savingImage ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.saveButtonText}>Save as Image</Text>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
@@ -211,6 +261,9 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 24,
+  },
+  shotContainer: {
+    backgroundColor: 'transparent',
   },
   card: {
     backgroundColor: '#f9fafb',
@@ -262,6 +315,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',
+    marginTop: 16,
+  },
+  saveButtonDisabled: {
+    opacity: 0.6,
   },
   saveButtonText: {
     color: '#fff',
