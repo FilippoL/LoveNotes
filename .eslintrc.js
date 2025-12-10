@@ -14,9 +14,9 @@ module.exports = {
     },
   },
   env: {
-    'react-native/react-native': true,
     es6: true,
     node: true,
+    'react-native/react-native': false, // Disable if plugin not installed
   },
   rules: {
     '@typescript-eslint/no-explicit-any': 'warn',
