@@ -19,6 +19,36 @@ service cloud.firestore {
       return getUserPairId() == pairId;
     }
     
+    // Helper function to check if updating partner connection fields
+    function isPartnerConnectionUpdate() {
+      let affectedKeys = request.resource.data.diff(resource.data).affectedKeys();
+      return affectedKeys.hasOnly(['partnerId', 'connectionStatus']) 
+             || affectedKeys.hasOnly(['partnerId']) 
+             || affectedKeys.hasOnly(['connectionStatus']);
+    }
+    
+    // Helper function to check if user is in a pair with the target user
+    // Pair IDs are created as sorted userIds: "userId1_userId2" where userId1 < userId2
+    function isInPairWith(targetUserId) {
+      let currentUserId = request.auth.uid;
+      // Sort IDs to match pairId format (alphabetically sorted)
+      let pairId = currentUserId < targetUserId 
+                   ? currentUserId + '_' + targetUserId
+                   : targetUserId + '_' + currentUserId;
+      let pairDoc = get(/databases/$(database)/documents/pairs/$(pairId));
+      // Check if pair exists and includes both users (for pairing)
+      let pairExists = pairDoc != null 
+                       && (pairDoc.data.user1Id == currentUserId || pairDoc.data.user2Id == currentUserId)
+                       && (pairDoc.data.user1Id == targetUserId || pairDoc.data.user2Id == targetUserId);
+      // For breakup: check if target user's current partnerId matches the expected pairId
+      // and we're setting partnerId to null
+      let targetUserPartnerId = resource.data.partnerId;
+      let isBreakup = targetUserPartnerId != null 
+                      && targetUserPartnerId == pairId
+                      && request.resource.data.partnerId == null;
+      return pairExists || isBreakup;
+    }
+    
     // Users collection
     match /users/{userId} {
       allow read: if isAuthenticated() && request.auth.uid == userId;
@@ -28,8 +58,16 @@ service cloud.firestore {
                     && request.resource.data.email is string
                     && request.resource.data.publicKey is string;
       allow update: if isAuthenticated() 
-                    && request.auth.uid == userId
-                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['publicKey']));
+                    && (
+                      // User can update their own document (except publicKey)
+                      (request.auth.uid == userId
+                       && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['publicKey']))
+                      ||
+                      // User can update partner's document when setting up/breaking up a pair
+                      (request.auth.uid != userId
+                       && isPartnerConnectionUpdate()
+                       && isInPairWith(userId))
+                    );
     }
     
     // Pairs collection
