@@ -30,16 +30,25 @@ if (getApps().length === 0) {
 }
 
 // Initialize Firebase Auth with React Native persistence
-// For React Native, we need to use initializeAuth instead of getAuth
+// For React Native/Expo, we must ALWAYS use initializeAuth (not getAuth)
+// This is required to avoid "Component auth has not been registered yet" error
+// getAuth() doesn't work properly in React Native - we must use initializeAuth
 let authInstance: Auth;
 try {
-  // Try to get existing auth instance first
-  authInstance = getAuth(app);
-} catch (error) {
-  // If auth doesn't exist, initialize it with AsyncStorage persistence
+  // Always use initializeAuth for React Native/Expo
+  // getAuth() can cause "Component auth has not been registered yet" error
   authInstance = initializeAuth(app, {
     persistence: getReactNativePersistence(AsyncStorage),
   });
+} catch (error: any) {
+  // If initializeAuth fails (e.g., already initialized), try getAuth as fallback
+  // This can happen in development with hot reload
+  if (error.code === 'auth/already-initialized') {
+    authInstance = getAuth(app);
+  } else {
+    // Re-throw other errors
+    throw error;
+  }
 }
 
 // Initialize Firebase services
