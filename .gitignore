@@ -70,6 +70,11 @@ GoogleService-Info.plist
 # Testing
 coverage/
 
+# Generated files
+*.pdf
+functions/lib/
+functions/package-lock.json
+
 # Misc
 *.log
 *.swp
