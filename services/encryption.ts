@@ -156,10 +156,14 @@ class EncryptionService {
 
   /**
    * Generate a random invite code
+   * Note: Base64 can contain '/' which breaks Firestore document IDs
+   * So we replace '/' with '-' to make it safe
    */
   generateInviteCode(): string {
     const bytes = nacl.randomBytes(16);
-    return encodeBase64(bytes).substring(0, 22); // Base64, 22 chars for readability
+    const base64 = encodeBase64(bytes).substring(0, 22); // Base64, 22 chars for readability
+    // Replace '/' with '-' to avoid Firestore path issues
+    return base64.replace(/\//g, '-');
   }
 }
 
