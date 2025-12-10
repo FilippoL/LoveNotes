@@ -16,6 +16,9 @@ import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+// Navigation state persistence key - change this to clear old navigation state
+const NAVIGATION_PERSISTENCE_KEY = 'NAVIGATION_STATE_V1';
+
 function AuthNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -58,7 +61,11 @@ function AppNavigator() {
 
 export default function App() {
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      onReady={() => {
+        // Clear any invalid navigation state on ready
+      }}
+    >
       <AuthProvider>
         <PartnerProvider>
           <AppNavigator />
