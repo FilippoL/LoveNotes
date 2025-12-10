@@ -114,9 +114,17 @@ export default function HomeScreen({ navigation }: any) {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <ScrollView style={styles.container}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>Hello, {user?.email?.split('@')[0]}</Text>
+        <View style={styles.headerTop}>
+          <Text style={styles.greeting}>Hello, {user?.email?.split('@')[0]}</Text>
+          <TouchableOpacity
+            style={styles.settingsIconButton}
+            onPress={() => navigation.navigate('Settings')}
+          >
+            <Text style={styles.settingsIcon}>⚙️</Text>
+          </TouchableOpacity>
+        </View>
         {partner && (
           <Text style={styles.partnerName}>Connected with your partner</Text>
         )}
@@ -164,12 +172,6 @@ export default function HomeScreen({ navigation }: any) {
         </View>
       )}
 
-      <TouchableOpacity
-        style={styles.settingsButton}
-        onPress={() => navigation.navigate('Settings')}
-      >
-        <Text style={styles.settingsButtonText}>Settings</Text>
-      </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -259,14 +261,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
-  settingsButton: {
-    margin: 24,
-    padding: 16,
-    alignItems: 'center',
-  },
-  settingsButtonText: {
-    color: '#6366f1',
-    fontSize: 16,
   },
 });
 
