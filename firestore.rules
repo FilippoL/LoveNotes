@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function getUserPairId() {
+      let userData = getUserData();
+      return userData.pairId;
+    }
+    
+    function isUserInPair(pairId) {
+      return getUserPairId() == pairId;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow create: if isAuthenticated() 
+                    && request.auth.uid == userId
+                    && request.resource.data.keys().hasAll(['email', 'publicKey'])
+                    && request.resource.data.email is string
+                    && request.resource.data.publicKey is string;
+      allow update: if isAuthenticated() 
+                    && request.auth.uid == userId
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['publicKey']));
+    }
+    
+    // Pairs collection
+    match /pairs/{pairId} {
+      allow read: if isAuthenticated() && isUserInPair(pairId);
+      allow create: if isAuthenticated() 
+                    && request.resource.data.keys().hasAll(['user1Id', 'user2Id', 'createdAt'])
+                    && (request.resource.data.user1Id == request.auth.uid 
+                        || request.resource.data.user2Id == request.auth.uid);
+      allow update: if isAuthenticated() && isUserInPair(pairId);
+      allow delete: if isAuthenticated() && isUserInPair(pairId);
+    }
+    
+    // Cards collection
+    match /cards/{cardId} {
+      allow read: if isAuthenticated() 
+                  && resource.data.pairId == getUserPairId();
+      allow create: if isAuthenticated() 
+                    && request.resource.data.keys().hasAll(['pairId', 'creatorId', 'encryptedContent', 'contentType', 'createdAt', 'isRead'])
+                    && request.resource.data.creatorId == request.auth.uid
+                    && request.resource.data.pairId == getUserPairId()
+                    && request.resource.data.contentType in ['text', 'voice']
+                    && request.resource.data.isRead == false;
+      allow update: if isAuthenticated() 
+                    && resource.data.pairId == getUserPairId()
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['encryptedContent', 'creatorId', 'pairId']));
+      allow delete: if false; // Cards are never deleted, only marked as read
+    }
+    
+    // Draw history collection
+    match /drawHistory/{pairId}/{drawId} {
+      allow read: if isAuthenticated() && isUserInPair(pairId);
+      allow create: if isAuthenticated() 
+                    && request.resource.data.keys().hasAll(['cardId', 'drawnAt', 'viewedBy'])
+                    && request.resource.data.viewedBy == request.auth.uid
+                    && isUserInPair(pairId);
+    }
+  }
+}
+

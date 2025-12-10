@@ -1,0 +1,25 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to get user's pair ID
+    function getUserPairId() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.pairId;
+    }
+    
+    // Voice files stored as: voice/{pairId}/{cardId}.encrypted
+    match /voice/{pairId}/{cardId}.{extension} {
+      allow read: if isAuthenticated() && getUserPairId() == pairId;
+      allow write: if isAuthenticated() 
+                   && getUserPairId() == pairId
+                   && request.resource.size < 2 * 1024 * 1024  // 2MB limit
+                   && extension == 'encrypted';
+      allow delete: if false; // Voice files are never deleted
+    }
+  }
+}
+
