@@ -193,13 +193,26 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 24,
-    paddingTop: 48,
+    paddingTop: 16,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   greeting: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 4,
+    flex: 1,
+  },
+  settingsIconButton: {
+    padding: 8,
+    marginLeft: 16,
+  },
+  settingsIcon: {
+    fontSize: 24,
   },
   partnerName: {
     fontSize: 16,
