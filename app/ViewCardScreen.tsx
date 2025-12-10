@@ -13,6 +13,7 @@ import { Audio } from 'expo-av';
 import * as Sharing from 'expo-sharing';
 import * as MediaLibrary from 'expo-media-library';
 import ViewShot from 'react-native-view-shot';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { usePartner } from '../contexts/PartnerContext';
 import { cardService } from '../services/cards';
@@ -196,7 +197,8 @@ export default function ViewCardScreen({ route, navigation }: any) {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 0.9 }} style={styles.shotContainer}>
         <View style={styles.card}>
         {card.contentType === 'text' ? (
@@ -245,11 +247,16 @@ export default function ViewCardScreen({ route, navigation }: any) {
           <Text style={styles.saveButtonText}>Save as Image</Text>
         )}
       </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
