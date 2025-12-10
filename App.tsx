@@ -1,13 +1,71 @@
+import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { PartnerProvider, usePartner } from './contexts/PartnerContext';
+import LoginScreen from './app/LoginScreen';
+import RegisterScreen from './app/RegisterScreen';
+import ConnectScreen from './app/ConnectScreen';
+import HomeScreen from './app/HomeScreen';
+import CreateCardScreen from './app/CreateCardScreen';
+import ViewCardScreen from './app/ViewCardScreen';
+import SettingsScreen from './app/SettingsScreen';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import type { RootStackParamList } from './types';
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
+function AuthNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
+    </Stack.Navigator>
+  );
+}
+
+function MainNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Connect" component={ConnectScreen} />
+      <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="CreateCard" component={CreateCardScreen} />
+      <Stack.Screen name="ViewCard" component={ViewCardScreen} />
+      <Stack.Screen name="Settings" component={SettingsScreen} />
+    </Stack.Navigator>
+  );
+}
+
+function AppNavigator() {
+  const { user, loading: authLoading } = useAuth();
+  const { connectionStatus, loading: partnerLoading } = usePartner();
+
+  if (authLoading || partnerLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6366f1" />
+      </View>
+    );
+  }
+
+  if (!user) {
+    return <AuthNavigator />;
+  }
+
+  return <MainNavigator />;
+}
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>LoveNotes</Text>
-      <Text style={styles.subtitle}>A digital sanctuary for mutual appreciation</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <AuthProvider>
+        <PartnerProvider>
+          <AppNavigator />
+          <StatusBar style="auto" />
+        </PartnerProvider>
+      </AuthProvider>
+    </NavigationContainer>
   );
 }
 
@@ -15,19 +73,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    paddingHorizontal: 20,
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
 });
-

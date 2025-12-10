@@ -12,12 +12,15 @@ service firebase.storage {
     }
     
     // Voice files stored as: voice/{pairId}/{cardId}.encrypted
-    match /voice/{pairId}/{cardId}.{extension} {
-      allow read: if isAuthenticated() && getUserPairId() == pairId;
+    match /voice/{pairId}/{cardId} {
+      // Only allow files with .encrypted extension
+      allow read: if isAuthenticated() 
+                  && getUserPairId() == pairId
+                  && resource.name.matches('.*\\.encrypted$');
       allow write: if isAuthenticated() 
                    && getUserPairId() == pairId
                    && request.resource.size < 2 * 1024 * 1024  // 2MB limit
-                   && extension == 'encrypted';
+                   && request.resource.name.matches('.*\\.encrypted$');
       allow delete: if false; // Voice files are never deleted
     }
   }
