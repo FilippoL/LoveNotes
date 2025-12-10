@@ -121,6 +121,7 @@ export default function HomeScreen({ navigation }: any) {
           <TouchableOpacity
             style={styles.settingsIconButton}
             onPress={() => navigation.navigate('Settings')}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Text style={styles.settingsIcon}>⚙️</Text>
           </TouchableOpacity>
@@ -208,11 +209,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   settingsIconButton: {
-    padding: 8,
+    padding: 12,
     marginLeft: 16,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 20,
+    minWidth: 40,
+    minHeight: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   settingsIcon: {
-    fontSize: 24,
+    fontSize: 28,
   },
   partnerName: {
     fontSize: 16,
