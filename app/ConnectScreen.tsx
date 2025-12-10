@@ -30,13 +30,22 @@ export default function ConnectScreen({ navigation }: any) {
   }, [connectionStatus, navigation]);
 
   const handleGenerateInvite = async () => {
-    if (!user) return;
+    if (!user) {
+      Alert.alert('Error', 'Please log in first');
+      return;
+    }
+
+    if (!user.publicKey) {
+      Alert.alert('Error', 'Your account is missing encryption keys. Please log out and sign up again.');
+      return;
+    }
 
     setGenerating(true);
     try {
       const code = await generateInviteCode();
       setInviteCode(code);
     } catch (error: any) {
+      console.error('Error generating invite code:', error);
       Alert.alert('Error', error.message || 'Failed to generate invite code');
     } finally {
       setGenerating(false);

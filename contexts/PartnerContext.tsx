@@ -84,11 +84,20 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
       throw new Error('User not authenticated');
     }
 
+    if (!user.publicKey) {
+      throw new Error('Your account is missing encryption keys. Please log out and sign up again.');
+    }
+
     if (user.partnerId) {
       throw new Error('You are already paired with a partner');
     }
 
-    return await partnerService.generateInviteCode(user.id, user.publicKey);
+    try {
+      return await partnerService.generateInviteCode(user.id, user.publicKey);
+    } catch (error: any) {
+      console.error('Error in generateInviteCode:', error);
+      throw error;
+    }
   };
 
   const acceptInviteCode = async (code: string): Promise<void> => {

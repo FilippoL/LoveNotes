@@ -26,24 +26,36 @@ class PartnerService {
    * Generate an invite code for the current user
    */
   async generateInviteCode(userId: string, publicKey: string): Promise<string> {
-    const code = encryptionService.generateInviteCode();
+    if (!publicKey) {
+      throw new Error('Public key is required to generate invite code');
+    }
 
-    const inviteData: InviteCode = {
-      code,
-      publicKey,
-      userId,
-      createdAt: new Date(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-    };
+    try {
+      const code = encryptionService.generateInviteCode();
 
-    // Store invite code in Firestore
-    await setDoc(doc(db, INVITE_CODES_COLLECTION, code), {
-      ...inviteData,
-      createdAt: serverTimestamp(),
-      expiresAt: new Date(inviteData.expiresAt!.getTime()),
-    });
+      const inviteData: InviteCode = {
+        code,
+        publicKey,
+        userId,
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      };
 
-    return code;
+      // Store invite code in Firestore
+      await setDoc(doc(db, INVITE_CODES_COLLECTION, code), {
+        ...inviteData,
+        createdAt: serverTimestamp(),
+        expiresAt: new Date(inviteData.expiresAt!.getTime()),
+      });
+
+      return code;
+    } catch (error: any) {
+      console.error('Error generating invite code in service:', error);
+      if (error.code === 'permission-denied') {
+        throw new Error('Permission denied. Please check your Firebase security rules.');
+      }
+      throw new Error(`Failed to generate invite code: ${error.message}`);
+    }
   }
 
   /**
