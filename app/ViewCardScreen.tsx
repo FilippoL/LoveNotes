@@ -230,7 +230,7 @@ export default function ViewCardScreen({ route, navigation }: any) {
         {savingImage ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.saveButtonText}>Save as Image</Text>
+          <Text style={styles.saveButtonText}>Share Card</Text>
         )}
       </TouchableOpacity>
       </ScrollView>
