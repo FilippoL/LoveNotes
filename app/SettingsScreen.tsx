@@ -8,6 +8,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { usePartner } from '../contexts/PartnerContext';
 
@@ -64,8 +65,9 @@ export default function SettingsScreen({ navigation }: any) {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Settings</Text>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.title}>Settings</Text>
 
       {/* User Info */}
       <View style={styles.section}>
@@ -123,17 +125,23 @@ export default function SettingsScreen({ navigation }: any) {
           A digital sanctuary for mutual appreciation
         </Text>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
   },
   content: {
     padding: 24,
+    paddingBottom: 40, // Extra padding at bottom to ensure logout button is visible
   },
   title: {
     fontSize: 28,

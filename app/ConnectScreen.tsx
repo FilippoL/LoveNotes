@@ -10,6 +10,7 @@ import {
   ScrollView,
   Share,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import QRCode from 'react-native-qrcode-svg';
 import { usePartner } from '../contexts/PartnerContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -93,8 +94,9 @@ export default function ConnectScreen({ navigation }: any) {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Connect with Your Partner</Text>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.title}>Connect with Your Partner</Text>
       <Text style={styles.subtitle}>
         Generate an invite code or enter one from your partner
       </Text>
@@ -167,11 +169,16 @@ export default function ConnectScreen({ navigation }: any) {
           )}
         </TouchableOpacity>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
