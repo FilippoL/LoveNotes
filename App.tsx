@@ -1,5 +1,6 @@
 // Polyfill for crypto.getRandomValues (required for TweetNaCl in React Native)
-import 'expo-crypto';
+// Must be imported before any other imports that use crypto
+import 'react-native-get-random-values';
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
