@@ -96,10 +96,19 @@ export default function ConnectScreen({ navigation }: any) {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Connect with Your Partner</Text>
-      <Text style={styles.subtitle}>
-        Generate an invite code or enter one from your partner
-      </Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>Connect with Your Partner</Text>
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => navigation.navigate('Settings')}
+          >
+            <Text style={styles.settingsIcon}>⚙️</Text>
+            <Text style={styles.settingsLabel}>Settings</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.subtitle}>
+          Generate an invite code or enter one from your partner
+        </Text>
 
       {/* Generate Invite Section */}
       <View style={styles.section}>
