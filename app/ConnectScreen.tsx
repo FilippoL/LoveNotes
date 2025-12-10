@@ -201,12 +201,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
+    flex: 1,
     color: '#333',
+  },
+  settingsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  settingsIcon: {
+    fontSize: 20,
+    marginRight: 4,
+  },
+  settingsLabel: {
+    fontSize: 14,
+    color: '#6366f1',
+    fontWeight: '600',
   },
   subtitle: {
     fontSize: 16,
