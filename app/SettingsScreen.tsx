@@ -67,8 +67,6 @@ export default function SettingsScreen({ navigation }: any) {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Settings</Text>
-
       {/* User Info */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Account</Text>
