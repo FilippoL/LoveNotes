@@ -29,13 +29,15 @@
 - [x] Card creation (text + voice + templates) ✅
 - [x] Card drawing with cooldown logic ✅
 - [x] Deck rotation algorithm ✅
-- [x] History and image export ✅
+- [x] History and card sharing ✅
 - [x] Breakup functionality ✅
 - [x] Connect Screen with QR codes ✅
 - [x] Home Screen with Add/Draw buttons ✅
 - [x] Create Card Screen (text/voice/templates) ✅
-- [x] View Card Screen with decryption ✅
+- [x] View Card Screen with decryption and voice playback ✅
 - [x] Settings Screen with logout/breakup ✅
+- [x] Share Card feature (Expo-compatible) ✅
+- [x] SafeAreaView on all screens ✅
 
 ### Phase 4: Polish & Production (Pending)
 - [ ] Voice recording/playback optimization
@@ -61,7 +63,9 @@
 - ✅ Directory structure for scalable architecture
 
 ## Known Issues
-None at this time.
+- ESLint configuration fixed (removed invalid react-native environment)
+- react-native-view-shot replaced with Expo-compatible sharing solution
+- All screens now use SafeAreaView to prevent content overlap with device notch/camera
 
 ## Testing Status
 - Unit tests: Not started

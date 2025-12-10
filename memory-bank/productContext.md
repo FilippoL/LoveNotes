@@ -18,7 +18,7 @@ LoveNotes addresses the need for intentional, private appreciation in relationsh
    - **Add**: Create a new card (text or voice) with optional templates
    - **Pick**: Draw a random card from partner's unread deck (15-min cooldown)
 4. Cards cycle through deck completely before reshuffling
-5. Users can save cards as images
+5. Users can share cards via device share menu
 6. Breakup feature allows clean severance if needed
 
 ### Emotional Principles

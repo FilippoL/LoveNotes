@@ -22,9 +22,11 @@
 
 ### Media & UI
 - **expo-av**: Voice recording and playback
-- **expo-sharing**: Share saved card images
+- **expo-sharing**: Share card content (Expo-compatible, no native modules required)
+- **expo-media-library**: Media library access (for future image saving features)
 - **expo-haptics**: Tactile feedback
 - **react-native-qrcode-svg**: QR code generation for invite codes
+- **react-native-safe-area-context**: Safe area handling for device notches/cutouts
 
 ## Development Setup
 
@@ -44,8 +46,8 @@ npx create-expo-app LoveNotes --template
 npm install firebase @react-native-async-storage/async-storage
 
 # Media and UI
-npm install expo-av expo-sharing expo-haptics
-npm install react-native-qrcode-svg
+npm install expo-av expo-sharing expo-media-library expo-haptics
+npm install react-native-qrcode-svg react-native-safe-area-context
 
 # Encryption
 npm install libsodium-wrappers
@@ -86,22 +88,32 @@ npm test           # Jest tests
 ## Dependencies
 
 ### Production Dependencies
-- `expo`: Expo SDK
-- `react-native`: React Native core
-- `firebase`: Firebase SDK
-- `@react-native-async-storage/async-storage`: Local storage
-- `expo-av`: Audio recording/playback
-- `expo-sharing`: Share functionality
-- `expo-haptics`: Haptic feedback
-- `react-native-qrcode-svg`: QR code generation
-- `libsodium-wrappers` or `tweetnacl`: Encryption
+- `expo`: Expo SDK (~54.0.0)
+- `react-native`: React Native core (^0.81.5)
+- `firebase`: Firebase SDK (^10.7.1)
+- `@react-native-async-storage/async-storage`: Local storage (^2.2.0)
+- `expo-av`: Audio recording/playback (~16.0.8)
+- `expo-sharing`: Share functionality (~14.0.8)
+- `expo-media-library`: Media library access (~18.2.1)
+- `expo-haptics`: Haptic feedback (~15.0.8)
+- `react-native-qrcode-svg`: QR code generation (^6.2.0)
+- `react-native-safe-area-context`: Safe area handling (~5.6.0)
+- `tweetnacl`: Encryption (^1.0.3)
+- `react-native-get-random-values`: Crypto polyfill for React Native (^2.0.0)
 
 ### Development Dependencies
-- `typescript`: TypeScript compiler
-- `@types/react`: React type definitions
-- `@types/react-native`: React Native type definitions
-- `jest`: Testing framework
-- `@testing-library/react-native`: Testing utilities
+- `typescript`: TypeScript compiler (~5.9.2)
+- `@types/react`: React type definitions (~19.1.10)
+- `@typescript-eslint/eslint-plugin`: ESLint TypeScript plugin (^6.19.0)
+- `@typescript-eslint/parser`: ESLint TypeScript parser (^6.19.0)
+- `eslint`: ESLint linter (^8.57.0)
+- `jest`: Testing framework (^29.2.1)
+- `@testing-library/react-native`: Testing utilities (^12.4.2)
+- `react-test-renderer`: React test renderer (^19.1.0)
+
+### Removed Dependencies (Expo Compatibility)
+- `react-native-view-shot`: Removed - requires native modules not available in Expo Go
+- `expo-gl`, `expo-gl-cpp`: Removed - not needed after switching to sharing solution
 
 ## Environment Configuration
 

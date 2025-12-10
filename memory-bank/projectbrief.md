@@ -19,7 +19,7 @@ LoveNotes is a minimalistic relationship appreciation app connecting two users i
   - Pre-built templates for guidance
   - Drawing cards: Random from partner's unread deck, 15-min cooldown
   - Rotation logic: Complete deck exhaustion before reshuffling
-  - Save as image functionality
+  - Share card functionality (via device share menu)
 - **Security**: End-to-end encryption for all card content
 - **UX**: Minimalist interface with two main buttons (Add, Pick)
 

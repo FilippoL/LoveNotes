@@ -33,7 +33,7 @@ App
 │       │   └── TemplateSelector
 │       ├── ViewCardScreen
 │       │   ├── CardDisplay
-│       │   ├── SaveAsImageButton
+│       │   ├── ShareCardButton
 │       │   └── VoicePlayer
 │       └── SettingsScreen
 │           ├── PartnerInfo

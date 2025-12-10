@@ -91,11 +91,19 @@
 1. ✅ **Connect Screen**: UI for invite code generation/scanning and QR codes
 2. ✅ **Home Screen**: Main app interface with Add/Draw buttons with cooldown timer
 3. ✅ **Create Card Screen**: Text/voice card creation with templates
-4. ✅ **View Card Screen**: Card display with decryption, voice playback, and save as image
+4. ✅ **View Card Screen**: Card display with decryption, voice playback, and share functionality
 5. ✅ **Settings Screen**: Partner info, breakup, and logout functionality
-6. ✅ **Save as Image Feature**: Implemented using react-native-view-shot and expo-media-library
+6. ✅ **Share Card Feature**: Implemented using expo-sharing (Expo-compatible solution)
 7. ✅ **SafeAreaView**: Added to all screens to prevent content from covering notch/camera
 8. ✅ **Navigation**: Complete navigation flow with proper headers and back buttons
+
+## Recent Changes (Bug Fixes & Compatibility)
+
+### Fixed Issues
+1. ✅ **ESLint Configuration**: Removed invalid `react-native/react-native` environment key that was causing GitHub Actions failures
+2. ✅ **Expo Compatibility**: Replaced `react-native-view-shot` (requires native modules) with `expo-sharing` for card sharing functionality
+3. ✅ **Module Resolution**: Fixed "Unable to resolve module" error by removing incompatible native dependencies
+4. ✅ **UI Improvements**: All screens now properly respect device safe areas (notch, camera cutouts)
 
 ## Next Steps (Phase 4: Polish & Production)
 1. **Testing**: Comprehensive testing of all features
@@ -128,7 +136,15 @@
 - **Structure**: Clear separation of concerns (services, contexts, components)
 
 ## Current Blockers
-None. Ready to proceed with Phase 2.
+None. Ready to proceed with Phase 4: Polish & Production.
+
+## Recent Technical Decisions
+
+### Expo Compatibility
+- **Decision**: Replaced `react-native-view-shot` with `expo-sharing`
+- **Rationale**: `react-native-view-shot` requires native modules not available in Expo Go, causing module resolution errors
+- **Solution**: Use `expo-sharing` to share card content as text, which works seamlessly with Expo Go
+- **Status**: ✅ Implemented - Share Card feature now works in Expo Go without native build requirements
 
 ## Notes
 - Phase 1 foundation is solid and production-ready
