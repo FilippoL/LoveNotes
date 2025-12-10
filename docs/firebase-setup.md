@@ -35,6 +35,8 @@ This guide walks you through setting up Firebase for the LoveNotes app.
 2. Choose **Start in production mode**
 3. Use the same location as Firestore
 4. Click "Done"
+5. **Important**: Wait for Storage to fully initialize (may take a minute)
+6. Verify Storage is active by checking the Storage tab shows "Files" section
 
 ## Step 5: Deploy Security Rules
 
@@ -59,16 +61,22 @@ This guide walks you through setting up Firebase for the LoveNotes app.
 
 4. Deploy Storage rules:
    ```bash
-   firebase deploy --only storage:rules
+   firebase deploy --only storage
    ```
+   
+   **Note**: Use `--only storage` (not `--only storage:rules`) to deploy storage rules.
 
 ## Step 6: Get Firebase Configuration
+
+For React Native/Expo apps, you can use the **Web app** configuration for all platforms (Android, iOS, and Web). Expo uses the Firebase JavaScript SDK which works across all platforms.
 
 1. Go to **Project Settings** (gear icon)
 2. Scroll to "Your apps"
 3. Click the **Web** icon (`</>`)
 4. Register app with nickname: "LoveNotes Web"
 5. Copy the configuration values
+
+**Note**: While you can also register separate Android and iOS apps in Firebase, the Web app configuration is sufficient for Expo apps and simplifies setup. The same Firebase project and configuration works for all platforms.
 
 ## Step 7: Configure Environment Variables
 
@@ -78,12 +86,15 @@ Create a `.env` file in the project root:
 EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
 EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
 EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
 EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
 ```
 
-**Important**: Never commit `.env` to version control. It's already in `.gitignore`.
+**Important**: 
+- Never commit `.env` to version control (already in `.gitignore`)
+- All Expo environment variables must be prefixed with `EXPO_PUBLIC_`
+- Restart Expo dev server after changing `.env` values
 
 ## Step 8: Set Up Firestore Indexes
 
@@ -148,6 +159,16 @@ npm run build
 - Verify Storage rules allow authenticated users
 - Check file size is under 2MB limit
 - Ensure file extension is `.encrypted`
+
+### Storage Rules Deployment Error: "Could not find rules for the following storage targets"
+- **Cause**: Storage hasn't been initialized in Firebase Console yet
+- **Solution**: 
+  1. Go to Firebase Console > Storage
+  2. Click "Get started" if you haven't already
+  3. Complete the Storage setup wizard
+  4. Wait 1-2 minutes for initialization
+  5. Try deploying rules again: `firebase deploy --only storage`
+- **Alternative**: If Storage is initialized, verify `storage.rules` file exists in project root
 
 ## Security Best Practices
 

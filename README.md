@@ -74,12 +74,13 @@ EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
 # Start Expo development server
 npm start
 
-# Run on Android
-npm run android
-
-# Run on iOS
-npm run ios
+# Then scan QR code with Expo Go app (recommended for testing)
+# Or run on Android/iOS emulator:
+npm run android  # Android
+npm run ios      # iOS (macOS only)
 ```
+
+**Note**: For testing on physical device, use Expo Go app (no build required). See [Firebase Setup Guide](docs/firebase-setup.md) for details.
 
 ## Development
 
