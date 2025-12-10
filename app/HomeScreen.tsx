@@ -113,7 +113,8 @@ export default function HomeScreen({ navigation }: any) {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.greeting}>Hello, {user?.email?.split('@')[0]}</Text>
         {partner && (
