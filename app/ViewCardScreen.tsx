@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import { Audio } from 'expo-av';
 import * as Sharing from 'expo-sharing';
-import { decodeBase64 } from 'tweetnacl-util';
+import * as FileSystem from 'expo-file-system/legacy';
+import { decodeBase64, encodeBase64 } from 'tweetnacl-util';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { usePartner } from '../contexts/PartnerContext';
@@ -107,15 +108,31 @@ export default function ViewCardScreen({ route, navigation }: any) {
         sharedSecret
       );
 
-      // Create blob URL for playback
-      const blob = new Blob([decrypted], { type: 'audio/m4a' });
-      const uri = URL.createObjectURL(blob);
+      // Write decrypted audio to temporary file for playback
+      // React Native doesn't support Blob/URL.createObjectURL
+      const tempFileUri = `${FileSystem.cacheDirectory}${Date.now()}.m4a`;
+      const base64Decrypted = encodeBase64(decrypted);
+      await FileSystem.writeAsStringAsync(tempFileUri, base64Decrypted, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
 
-      // Play audio
+      // Play audio from file URI
       const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri },
+        { uri: tempFileUri },
         { shouldPlay: true }
       );
+      
+      // Clean up temp file after playback finishes
+      newSound.setOnPlaybackStatusUpdate(async (status: any) => {
+        if (status.didJustFinish) {
+          setIsPlaying(false);
+          try {
+            await FileSystem.deleteAsync(tempFileUri, { idempotent: true });
+          } catch (e) {
+            // Ignore cleanup errors
+          }
+        }
+      });
 
       setSound(newSound);
       setIsPlaying(true);
