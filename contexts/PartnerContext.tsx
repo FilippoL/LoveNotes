@@ -167,12 +167,14 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
       throw new Error('User not authenticated');
     }
 
+    // Accept the invite code - this updates Firestore
     await partnerService.acceptInviteCode(code, user);
     
     // Refresh AuthContext user data to get updated partnerId
     await refreshUser();
     
-    // Also manually update connectionStatus immediately since snapshot listener might be delayed
+    // Manually update connectionStatus immediately from Firestore
+    // This ensures it's set before navigation happens
     if (user.id) {
       try {
         const userDoc = doc(db, 'users', user.id);
@@ -180,12 +182,15 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
         if (docSnapshot.exists()) {
           const userData = docSnapshot.data() as Omit<User, 'id'>;
           const newConnectionStatus = userData.connectionStatus || 'unpaired';
+          const newPartnerId = userData.partnerId;
+          
+          // Update connection status immediately
           setConnectionStatus(newConnectionStatus);
           
           // Load partner if connected
-          if (userData.partnerId && newConnectionStatus === 'connected') {
+          if (newPartnerId && newConnectionStatus === 'connected') {
             currentPartnerIdRef.current = null; // Reset to allow loading
-            loadPartner(userData.partnerId, user.id);
+            loadPartner(newPartnerId, user.id);
           }
         }
       } catch (error) {
