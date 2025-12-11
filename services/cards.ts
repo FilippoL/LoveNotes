@@ -12,6 +12,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { ref, uploadBytes, uploadString, getDownloadURL } from 'firebase/storage';
+import { encodeBase64 } from 'tweetnacl-util';
 import { db, storage } from './firebase';
 import { encryptionService } from './encryption';
 import type { Card, CardType, CardTemplate } from '../types';
@@ -122,7 +123,7 @@ class CardService {
       // Convert to base64 for React Native compatibility
       // Firebase Storage uploadBytes doesn't work well with Uint8Array in React Native
       // So we convert to base64 and use uploadString instead
-      const base64String = btoa(String.fromCharCode(...combined));
+      const base64String = encodeBase64(combined);
 
       // Upload to Firebase Storage using base64 string
       const fileName = `${pairId}/${Date.now()}.encrypted`;
