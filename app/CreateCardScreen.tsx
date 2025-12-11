@@ -33,6 +33,7 @@ export default function CreateCardScreen({ navigation }: any) {
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [saving, setSaving] = useState(false);
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const recordingRef = useRef<Audio.Recording | null>(null);
 
   const handleTemplateSelect = (templateId: string) => {
     const template = CARD_TEMPLATES.find((t) => t.id === templateId);
