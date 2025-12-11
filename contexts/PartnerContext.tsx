@@ -93,7 +93,7 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
       loadingRef.current = false;
       currentPartnerIdRef.current = null;
     }
-  }, [user?.id, user?.partnerId, user?.connectionStatus, loadPartner]);
+  }, [user?.id, user?.partnerId, user?.connectionStatus]);
 
   // Listen to user document changes for connection status updates
   useEffect(() => {
@@ -131,7 +131,7 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
     });
 
     return () => unsubscribe();
-  }, [user?.id, loadPartner]);
+  }, [user?.id]);
 
   const generateInviteCode = async (): Promise<string> => {
     if (!user) {
