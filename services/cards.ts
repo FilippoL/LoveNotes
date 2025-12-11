@@ -12,7 +12,8 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
-import { encodeBase64 } from 'tweetnacl-util';
+import * as FileSystem from 'expo-file-system';
+import { encodeBase64, decodeBase64 } from 'tweetnacl-util';
 import { db, storage } from './firebase';
 import { encryptionService } from './encryption';
 import type { Card, CardType, CardTemplate } from '../types';
@@ -109,16 +110,21 @@ class CardService {
     }
 
     try {
-      // Read audio file using fetch
-      const response = await fetch(audioUri);
-      if (!response.ok) {
-        throw new Error(`Failed to read audio file: ${response.statusText}`);
-      }
+      // Read audio file as base64 using expo-file-system (avoids ArrayBuffer issues)
+      const base64Audio = await FileSystem.readAsStringAsync(audioUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
       
-      const arrayBuffer = await response.arrayBuffer();
-      if (!arrayBuffer || arrayBuffer.byteLength === 0) {
-        throw new Error('Audio file is empty');
+      if (!base64Audio) {
+        throw new Error('Audio file is empty or could not be read');
       }
+
+      // Convert base64 to Uint8Array, then to ArrayBuffer for encryption
+      const audioBytes = decodeBase64(base64Audio);
+      const arrayBuffer = audioBytes.buffer.slice(
+        audioBytes.byteOffset,
+        audioBytes.byteOffset + audioBytes.byteLength
+      );
 
       // Encrypt audio
       const { encryptedData, nonce } = await encryptionService.encryptVoiceFile(
