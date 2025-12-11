@@ -65,11 +65,6 @@ class PartnerService {
     inviteCode: string,
     currentUser: User
   ): Promise<{ pairId: string; partnerPublicKey: string }> {
-    // Validate user is not already paired
-    if (currentUser.partnerId) {
-      throw new Error('You are already paired with a partner');
-    }
-
     // Get invite code from Firestore
     const inviteDoc = await getDoc(doc(db, INVITE_CODES_COLLECTION, inviteCode));
     if (!inviteDoc.exists()) {
@@ -89,6 +84,15 @@ class PartnerService {
       throw new Error('Cannot pair with yourself');
     }
 
+    // Create pair (sort IDs to ensure consistent pairId regardless of who creates it)
+    const userIds = [inviteData.userId, currentUser.id].sort();
+    const pairId = `${userIds[0]}_${userIds[1]}`;
+
+    // Check if current user is already paired with someone else (not the inviter)
+    if (currentUser.partnerId && currentUser.partnerId !== pairId) {
+      throw new Error('You are already paired with a partner');
+    }
+
     // Check if inviter is already paired
     const inviterDoc = await getDoc(doc(db, 'users', inviteData.userId));
     if (!inviterDoc.exists()) {
@@ -96,13 +100,46 @@ class PartnerService {
     }
 
     const inviterData = inviterDoc.data() as User;
-    if (inviterData.partnerId) {
+    
+    // Check if inviter is already paired with someone else (not the current user)
+    if (inviterData.partnerId && inviterData.partnerId !== pairId) {
       throw new Error('This user is already paired with someone else');
     }
 
-    // Create pair (sort IDs to ensure consistent pairId regardless of who creates it)
-    const userIds = [inviteData.userId, currentUser.id].sort();
-    const pairId = `${userIds[0]}_${userIds[1]}`;
+    // Check if pair already exists (idempotent operation)
+    const existingPairDoc = await getDoc(doc(db, PAIRS_COLLECTION, pairId));
+    if (existingPairDoc.exists()) {
+      // Pair already exists, just ensure both users are updated
+      const existingPairData = existingPairDoc.data() as Pair;
+      if (
+        (existingPairData.user1Id === inviteData.userId || existingPairData.user2Id === inviteData.userId) &&
+        (existingPairData.user1Id === currentUser.id || existingPairData.user2Id === currentUser.id)
+      ) {
+        // Pair is valid, just update user documents if needed
+        if (inviterData.partnerId !== pairId) {
+          await updateDoc(doc(db, 'users', inviteData.userId), {
+            partnerId: pairId,
+            connectionStatus: 'connected',
+          });
+        }
+        if (currentUser.partnerId !== pairId) {
+          await updateDoc(doc(db, 'users', currentUser.id), {
+            partnerId: pairId,
+            connectionStatus: 'connected',
+          });
+        }
+        // Delete used invite code
+        await deleteDoc(doc(db, INVITE_CODES_COLLECTION, inviteCode));
+        return {
+          pairId,
+          partnerPublicKey: inviteData.publicKey,
+        };
+      } else {
+        throw new Error('Invalid pair configuration');
+      }
+    }
+
+    // Create new pair
     const pairData: Pair = {
       id: pairId,
       user1Id: userIds[0],
