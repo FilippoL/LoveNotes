@@ -12,7 +12,8 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { ref, uploadBytes, uploadString, getDownloadURL } from 'firebase/storage';
-import { encodeBase64 } from 'tweetnacl-util';
+import * as FileSystem from 'expo-file-system';
+import { encodeBase64, decodeBase64 } from 'tweetnacl-util';
 import { db, storage } from './firebase';
 import { encryptionService } from './encryption';
 import type { Card, CardType, CardTemplate } from '../types';
@@ -105,13 +106,17 @@ class CardService {
     sharedSecret: Uint8Array
   ): Promise<string> {
     try {
-      // Read audio file
-      const response = await fetch(audioUri);
-      const audioArrayBuffer = await response.arrayBuffer();
+      // Read audio file as base64 using expo-file-system (avoids ArrayBuffer issues)
+      const base64Audio = await FileSystem.readAsStringAsync(audioUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      
+      // Convert base64 to Uint8Array for encryption
+      const audioBytes = decodeBase64(base64Audio);
 
       // Encrypt audio
       const { encryptedData, nonce } = await encryptionService.encryptVoiceFile(
-        audioArrayBuffer,
+        audioBytes.buffer,
         sharedSecret
       );
 
