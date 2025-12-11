@@ -120,16 +120,13 @@ class CardService {
         throw new Error('Audio file is empty or could not be read');
       }
 
-      // Convert base64 to Uint8Array, then to ArrayBuffer for encryption
+      // Convert base64 to Uint8Array for encryption
+      // Pass Uint8Array directly - no ArrayBuffer conversion needed
       const audioBytes = decodeBase64(base64Audio);
-      const arrayBuffer = audioBytes.buffer.slice(
-        audioBytes.byteOffset,
-        audioBytes.byteOffset + audioBytes.byteLength
-      );
 
-      // Encrypt audio
+      // Encrypt audio (now accepts Uint8Array directly)
       const { encryptedData, nonce } = await encryptionService.encryptVoiceFile(
-        arrayBuffer,
+        audioBytes,
         sharedSecret
       );
 

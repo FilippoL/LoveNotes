@@ -123,13 +123,15 @@ class EncryptionService {
   }
 
   /**
-   * Encrypt voice file (ArrayBuffer) using shared secret
+   * Encrypt voice file (Uint8Array) using shared secret
+   * Accepts Uint8Array directly to avoid ArrayBuffer/Blob issues in React Native
    */
   async encryptVoiceFile(
-    audioData: ArrayBuffer,
+    audioData: Uint8Array,
     sharedSecret: Uint8Array
   ): Promise<{ encryptedData: Uint8Array; nonce: Uint8Array }> {
-    const audioBytes = new Uint8Array(audioData);
+    // Ensure we have a Uint8Array (create copy if needed)
+    const audioBytes = audioData instanceof Uint8Array ? audioData : new Uint8Array(audioData);
     const nonce = nacl.randomBytes(24);
     const encrypted = nacl.secretbox(audioBytes, nonce, sharedSecret);
 
