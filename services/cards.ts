@@ -12,7 +12,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
-import { File } from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { encodeBase64, decodeBase64 } from 'tweetnacl-util';
 import { db, storage } from './firebase';
 import { encryptionService } from './encryption';
@@ -110,9 +110,11 @@ class CardService {
     }
 
     try {
-      // Read audio file as base64 using expo-file-system v19 new API
-      const file = new File(audioUri);
-      const base64Audio = await file.readAsStringAsync({ encoding: 'base64' });
+      // Read audio file as base64 using expo-file-system legacy API
+      // The new File API doesn't have readAsStringAsync, so we use the legacy API
+      const base64Audio = await FileSystem.readAsStringAsync(audioUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
       
       if (!base64Audio) {
         throw new Error('Audio file is empty or could not be read');
