@@ -174,8 +174,8 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
     // Accept the invite code - this updates Firestore
     await partnerService.acceptInviteCode(code, user);
     
-    // Refresh AuthContext user data to get updated partnerId
-    await refreshUser();
+    // Refresh AuthContext user data to get updated partnerId - force refresh from Firestore
+    await refreshUser(true);
     
     // Manually update connectionStatus immediately from Firestore
     // This ensures it's set before navigation happens

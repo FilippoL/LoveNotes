@@ -128,20 +128,23 @@ class AuthService {
   /**
    * Get current authenticated user from Firestore
    */
-  async getCurrentUser(): Promise<User | null> {
+  async getCurrentUser(forceRefresh: boolean = false): Promise<User | null> {
     const firebaseUser = auth.currentUser;
     if (!firebaseUser) {
       return null;
     }
 
     try {
-      // Try cache first
-      const cachedUser = await AsyncStorage.getItem(USER_STORAGE_KEY);
-      if (cachedUser) {
-        const user = JSON.parse(cachedUser) as User;
-        // Verify Firebase user matches
-        if (user.id === firebaseUser.uid) {
-          return user;
+      // If forceRefresh is true, skip cache and read from Firestore
+      if (!forceRefresh) {
+        // Try cache first
+        const cachedUser = await AsyncStorage.getItem(USER_STORAGE_KEY);
+        if (cachedUser) {
+          const user = JSON.parse(cachedUser) as User;
+          // Verify Firebase user matches
+          if (user.id === firebaseUser.uid) {
+            return user;
+          }
         }
       }
 

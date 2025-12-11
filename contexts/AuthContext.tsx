@@ -106,9 +106,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await authService.resetPassword(email);
   };
 
-  const refreshUser = async (): Promise<void> => {
+  const refreshUser = async (forceRefresh: boolean = false): Promise<void> => {
     try {
-      const userData = await authService.getCurrentUser();
+      const userData = await authService.getCurrentUser(forceRefresh);
+      console.log('[AuthContext] refreshUser - Updated user:', userData ? { id: userData.id, partnerId: userData.partnerId, connectionStatus: userData.connectionStatus } : null);
       setUser(userData);
     } catch (error) {
       console.error('Error refreshing user:', error);
