@@ -179,7 +179,11 @@ export default function HomeScreen({ navigation }: any) {
           activeOpacity={0.8}
         >
           <View style={styles.iconContainer}>
-            <Text style={styles.iconEmoji}>➕</Text>
+            <Image 
+              source={require('../assets/icons/writecard.png')}
+              style={styles.actionButtonIcon}
+              resizeMode="contain"
+            />
           </View>
           <Text style={styles.actionButtonText}>Add Card</Text>
         </TouchableOpacity>
@@ -195,7 +199,11 @@ export default function HomeScreen({ navigation }: any) {
           activeOpacity={0.8}
         >
           <View style={styles.iconContainer}>
-            <Text style={styles.iconEmoji}>🎴</Text>
+            <Image 
+              source={require('../assets/icons/pickcard.png')}
+              style={styles.actionButtonIcon}
+              resizeMode="contain"
+            />
           </View>
           <Text style={styles.actionButtonText}>Draw Card</Text>
           {cooldownInfo && !cooldownInfo.allowed && (
@@ -318,13 +326,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  iconEmoji: {
-    fontSize: 100,
-    textAlign: 'center',
-  },
   actionButtonIcon: {
     width: 150,
     height: 150,
+    tintColor: '#fff',
   },
   actionButtonText: {
     color: '#fff',
