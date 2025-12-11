@@ -91,7 +91,21 @@ export default function ConnectScreen({ navigation }: any) {
       // Reset navigation ref to allow auto-navigation
       hasNavigatedRef.current = false;
       // Show success message - navigation will happen automatically via useEffect
-      Alert.alert('Success', 'You are now connected with your partner!');
+      // But also add fallback navigation in case useEffect doesn't trigger
+      Alert.alert('Success', 'You are now connected with your partner!', [
+        {
+          text: 'OK',
+          onPress: () => {
+            // Fallback: navigate after a delay if useEffect didn't trigger
+            setTimeout(() => {
+              if (!hasNavigatedRef.current) {
+                hasNavigatedRef.current = true;
+                navigation.replace('Home');
+              }
+            }, 500);
+          },
+        },
+      ]);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to accept invite code');
     } finally {
