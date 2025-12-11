@@ -160,25 +160,29 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
     }
 
     await partnerService.acceptInviteCode(code, user);
-    // Refresh user data to get updated partnerId and connectionStatus
+    
+    // Refresh user data immediately to get updated partnerId and connectionStatus
     // The snapshot listener will also update, but this ensures immediate update
     if (user.id) {
-      // Force reload partner after a short delay to allow Firestore to sync
-      setTimeout(() => {
+      try {
         const userDoc = doc(db, 'users', user.id);
-        getDoc(userDoc).then((docSnapshot) => {
-          if (docSnapshot.exists()) {
-            const userData = docSnapshot.data() as Omit<User, 'id'>;
-            const newPartnerId = userData.partnerId;
-            const newConnectionStatus = userData.connectionStatus || 'unpaired';
-            
-            setConnectionStatus(newConnectionStatus);
-            if (newPartnerId && newConnectionStatus === 'connected') {
-              loadPartner(newPartnerId, user.id);
-            }
+        const docSnapshot = await getDoc(userDoc);
+        if (docSnapshot.exists()) {
+          const userData = docSnapshot.data() as Omit<User, 'id'>;
+          const newPartnerId = userData.partnerId;
+          const newConnectionStatus = userData.connectionStatus || 'unpaired';
+          
+          setConnectionStatus(newConnectionStatus);
+          if (newPartnerId && newConnectionStatus === 'connected') {
+            loadPartner(newPartnerId, user.id);
+          } else {
+            setPartner(null);
           }
-        });
-      }, 500);
+        }
+      } catch (error) {
+        console.error('Error refreshing user data after pairing:', error);
+        // Snapshot listener will handle the update eventually
+      }
     }
   };
 
