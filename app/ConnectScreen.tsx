@@ -27,6 +27,16 @@ export default function ConnectScreen({ navigation }: any) {
   // Auto-navigate to Home when connected
   React.useEffect(() => {
     console.log('[ConnectScreen] connectionStatus:', connectionStatus, 'partnerId:', user?.partnerId, 'hasNavigated:', hasNavigatedRef.current);
+    
+    // If connectionStatus is connected but partnerId is null, refresh user data
+    if (connectionStatus === 'connected' && !user?.partnerId && !hasNavigatedRef.current) {
+      console.log('[ConnectScreen] connectionStatus is connected but partnerId is null, refreshing user...');
+      refreshUser(true).then(() => {
+        console.log('[ConnectScreen] User refreshed, partnerId:', user?.partnerId);
+      });
+      return;
+    }
+    
     if (connectionStatus === 'connected' && user?.partnerId && !hasNavigatedRef.current) {
       console.log('[ConnectScreen] Navigating to Home...');
       hasNavigatedRef.current = true;
@@ -38,7 +48,7 @@ export default function ConnectScreen({ navigation }: any) {
     } else if (connectionStatus !== 'connected') {
       hasNavigatedRef.current = false;
     }
-  }, [connectionStatus, user?.partnerId, navigation]);
+  }, [connectionStatus, user?.partnerId, navigation, refreshUser]);
 
   const handleGenerateInvite = async () => {
     if (!user) {
