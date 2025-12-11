@@ -132,7 +132,7 @@ export default function HomeScreen({ navigation }: any) {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [cooldownInfo?.allowed, cooldownInfo?.remainingMinutes, cooldownInfo?.remainingSeconds]);
+  }, [cooldownInfo?.allowed, cooldownInfo?.remainingMinutes, cooldownInfo?.remainingSeconds, checkCooldown]);
 
   const handleAddCard = () => {
     navigation.navigate('CreateCard');
