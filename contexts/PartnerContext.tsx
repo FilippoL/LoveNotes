@@ -22,7 +22,7 @@ interface PartnerProviderProps {
 }
 
 export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [partner, setPartner] = useState<User | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('unpaired');
   const [loading, setLoading] = useState<boolean>(true);
@@ -161,6 +161,9 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
 
     await partnerService.acceptInviteCode(code, user);
     
+    // Refresh AuthContext user data to get updated partnerId
+    await refreshUser();
+    
     // Refresh user data immediately to get updated partnerId and connectionStatus
     // The snapshot listener will also update, but this ensures immediate update
     if (user.id) {
@@ -172,8 +175,14 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
           const newPartnerId = userData.partnerId;
           const newConnectionStatus = userData.connectionStatus || 'unpaired';
           
+          // Update connection status immediately
           setConnectionStatus(newConnectionStatus);
+          
+          // Reset refs to allow navigation and loading
+          currentPartnerIdRef.current = null;
+          
           if (newPartnerId && newConnectionStatus === 'connected') {
+            // Load partner data
             loadPartner(newPartnerId, user.id);
           } else {
             setPartner(null);

@@ -79,9 +79,12 @@ export default function ConnectScreen({ navigation }: any) {
     setAccepting(true);
     try {
       await acceptInviteCode(inputCode.trim());
-      Alert.alert('Success', 'You are now connected with your partner!', [
-        { text: 'OK', onPress: () => navigation.replace('Home') },
-      ]);
+      // Clear the input code
+      setInputCode('');
+      // Reset navigation ref to allow auto-navigation
+      hasNavigatedRef.current = false;
+      // Show success message - navigation will happen automatically via useEffect
+      Alert.alert('Success', 'You are now connected with your partner!');
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to accept invite code');
     } finally {
