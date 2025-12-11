@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,7 +16,7 @@ import { usePartner } from '../contexts/PartnerContext';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function ConnectScreen({ navigation }: any) {
-  const { generateInviteCode, acceptInviteCode, loading } = usePartner();
+  const { generateInviteCode, acceptInviteCode, loading, connectionStatus } = usePartner();
   const { user } = useAuth();
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [inputCode, setInputCode] = useState('');
@@ -70,17 +70,39 @@ export default function ConnectScreen({ navigation }: any) {
       await acceptInviteCode(inputCode.trim());
       setInputCode('');
       
-      // Wait a moment for state to update, then navigate
-      setTimeout(() => {
-        Alert.alert('Success', 'You are now connected with your partner!', [
-          {
-            text: 'OK',
-            onPress: () => {
-              navigation.replace('Home');
+      // Wait for state to update, then show success and navigate
+      let attempts = 0;
+      const checkAndNavigate = () => {
+        attempts++;
+        if (connectionStatus === 'connected' && user?.partnerId) {
+          Alert.alert('Success', 'You are now connected with your partner!', [
+            {
+              text: 'OK',
+              onPress: () => {
+                navigation.replace('Home');
+              },
             },
-          },
-        ]);
-      }, 500);
+          ]);
+          setAccepting(false);
+        } else if (attempts < 10) {
+          // Wait up to 2 seconds for state to update
+          setTimeout(checkAndNavigate, 200);
+        } else {
+          // Timeout - navigate anyway
+          Alert.alert('Success', 'You are now connected with your partner!', [
+            {
+              text: 'OK',
+              onPress: () => {
+                navigation.replace('Home');
+              },
+            },
+          ]);
+          setAccepting(false);
+        }
+      };
+      
+      // Start checking after a short delay
+      setTimeout(checkAndNavigate, 300);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to accept invite code');
       setAccepting(false);
