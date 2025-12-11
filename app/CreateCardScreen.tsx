@@ -43,41 +43,46 @@ export default function CreateCardScreen({ navigation }: any) {
     }
   };
 
+  const cleanupRecording = async () => {
+    // Clean up any existing recording - check both ref and state
+    const existingRecording = recordingRef.current || recording;
+    if (existingRecording) {
+      try {
+        const status = await existingRecording.getStatusAsync();
+        // Stop if recording, unload if prepared or in any state
+        if (status.isRecording) {
+          await existingRecording.stopAndUnloadAsync();
+        } else {
+          // If prepared but not recording, just unload
+          await existingRecording.unloadAsync();
+        }
+      } catch (e) {
+        // Ignore errors if already stopped or doesn't exist
+        console.log('Cleanup error (ignored):', e);
+      }
+      recordingRef.current = null;
+      setRecording(null);
+    }
+    
+    // Clear any existing timer
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current);
+      recordingTimerRef.current = null;
+    }
+    
+    // Reset recording state
+    setIsRecording(false);
+    setRecordingDuration(0);
+    setRecordingUri(null);
+    
+    // Small delay to ensure cleanup completes
+    await new Promise(resolve => setTimeout(resolve, 200));
+  };
+
   const startRecording = async () => {
     try {
-      // Clean up any existing recording first - check both ref and state
-      const existingRecording = recordingRef.current || recording;
-      if (existingRecording) {
-        try {
-          const status = await existingRecording.getStatusAsync();
-          // Stop if recording, unload if prepared or in any state
-          if (status.isRecording) {
-            await existingRecording.stopAndUnloadAsync();
-          } else {
-            // If prepared but not recording, just unload
-            await existingRecording.unloadAsync();
-          }
-        } catch (e) {
-          // Ignore errors if already stopped or doesn't exist
-          console.log('Cleanup error (ignored):', e);
-        }
-        recordingRef.current = null;
-        setRecording(null);
-      }
-      
-      // Clear any existing timer
-      if (recordingTimerRef.current) {
-        clearInterval(recordingTimerRef.current);
-        recordingTimerRef.current = null;
-      }
-      
-      // Reset recording state
-      setIsRecording(false);
-      setRecordingDuration(0);
-      setRecordingUri(null);
-      
-      // Small delay to ensure cleanup completes
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Clean up any existing recording first
+      await cleanupRecording();
       
       const permission = await Audio.requestPermissionsAsync();
       if (!permission.granted) {
@@ -91,8 +96,10 @@ export default function CreateCardScreen({ navigation }: any) {
         staysActiveInBackground: false,
       });
 
-      // Use custom high-quality recording options
-      const { recording: newRecording } = await Audio.Recording.createAsync(
+      // Try to create recording, with retry on "only one recording" error
+      let newRecording: Audio.Recording;
+      try {
+        const result = await Audio.Recording.createAsync(
         {
           android: {
             extension: '.m4a',
