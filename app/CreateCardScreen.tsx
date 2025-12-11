@@ -51,10 +51,36 @@ export default function CreateCardScreen({ navigation }: any) {
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
       });
 
+      // Use custom high-quality recording options
       const { recording: newRecording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
+        {
+          android: {
+            extension: '.m4a',
+            outputFormat: Audio.AndroidOutputFormat.MPEG_4,
+            audioEncoder: Audio.AndroidAudioEncoder.AAC,
+            sampleRate: 44100,
+            numberOfChannels: 2,
+            bitRate: 128000,
+          },
+          ios: {
+            extension: '.m4a',
+            outputFormat: Audio.IOSOutputFormat.MPEG4AAC,
+            audioQuality: Audio.IOSAudioQuality.MAX,
+            sampleRate: 44100,
+            numberOfChannels: 2,
+            bitRate: 128000,
+            linearPCMBitDepth: 16,
+            linearPCMIsBigEndian: false,
+            linearPCMIsFloat: false,
+          },
+          web: {
+            mimeType: 'audio/webm',
+            bitsPerSecond: 128000,
+          },
+        }
       );
       setRecording(newRecording);
       setIsRecording(true);
@@ -119,11 +145,18 @@ export default function CreateCardScreen({ navigation }: any) {
           sharedSecret
         );
       } else {
+        // Extract audio format from URI
+        const audioFormat = recordingUri ? (() => {
+          const match = recordingUri.match(/\.([a-zA-Z0-9]+)(\?|$)/);
+          return match ? `.${match[1]}` : '.m4a';
+        })() : '.m4a';
+        
         await cardService.createVoiceCard(
           user.partnerId,
           user.id,
           recordingUri!,
-          sharedSecret
+          sharedSecret,
+          audioFormat
         );
       }
 

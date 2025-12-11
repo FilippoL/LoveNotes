@@ -29,7 +29,8 @@ export interface Card {
   creatorId: string;
   encryptedContent: string; // Encrypted text or voice file reference
   contentType: CardType;
-  voiceUrl?: string; // Firebase Storage URL for voice files
+  voiceUrl?: string; // Firebase Storage URL for voice files (deprecated, using encryptedContent)
+  audioFormat?: string; // Audio file extension (e.g., '.m4a', '.webm') for proper playback
   isRead: boolean;
   createdAt: Date;
   templateUsed?: string; // Optional template identifier

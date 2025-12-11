@@ -60,6 +60,15 @@ export const CARD_TEMPLATES: CardTemplate[] = [
  */
 class CardService {
   /**
+   * Extract audio file extension from URI
+   */
+  private extractAudioFormat(uri: string): string {
+    // Extract extension from URI (e.g., 'file:///path/to/audio.m4a' -> '.m4a')
+    const match = uri.match(/\.([a-zA-Z0-9]+)(\?|$)/);
+    return match ? `.${match[1]}` : '.m4a'; // Default to .m4a if not found
+  }
+
+  /**
    * Create a text card
    */
   async createTextCard(
@@ -102,7 +111,8 @@ class CardService {
     pairId: string,
     creatorId: string,
     audioUri: string,
-    sharedSecret: Uint8Array
+    sharedSecret: Uint8Array,
+    audioFormat?: string
   ): Promise<string> {
     if (!audioUri) {
       throw new Error('Audio URI is required');
@@ -139,12 +149,16 @@ class CardService {
       // Firestore 1MB limit should be sufficient for encrypted 60-second voice files
       const encryptedContentBase64 = encodeBase64(combined);
 
+      // Extract audio format from URI if not provided
+      const format = audioFormat || this.extractAudioFormat(audioUri);
+
       // Create card document
       const cardData: Omit<Card, 'id'> = {
         pairId,
         creatorId,
         encryptedContent: encryptedContentBase64, // Store encrypted voice data here
         contentType: 'voice',
+        audioFormat: format, // Store format for proper playback
         isRead: false,
         createdAt: new Date(),
       };

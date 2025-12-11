@@ -110,7 +110,9 @@ export default function ViewCardScreen({ route, navigation }: any) {
 
       // Write decrypted audio to temporary file for playback
       // React Native doesn't support Blob/URL.createObjectURL
-      const tempFileUri = `${FileSystem.cacheDirectory}${Date.now()}.m4a`;
+      // Use the stored audio format or default to .m4a
+      const audioFormat = card.audioFormat || '.m4a';
+      const tempFileUri = `${FileSystem.cacheDirectory}${Date.now()}${audioFormat}`;
       const base64Decrypted = encodeBase64(decrypted);
       await FileSystem.writeAsStringAsync(tempFileUri, base64Decrypted, {
         encoding: FileSystem.EncodingType.Base64,
