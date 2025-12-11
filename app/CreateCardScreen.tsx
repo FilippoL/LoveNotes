@@ -45,12 +45,17 @@ export default function CreateCardScreen({ navigation }: any) {
 
   const startRecording = async () => {
     try {
-      // Clean up any existing recording first
-      if (recordingRef.current) {
+      // Clean up any existing recording first - check both ref and state
+      const existingRecording = recordingRef.current || recording;
+      if (existingRecording) {
         try {
-          await recordingRef.current.stopAndUnloadAsync();
+          const status = await existingRecording.getStatusAsync();
+          if (status.isRecording || status.canRecord) {
+            await existingRecording.stopAndUnloadAsync();
+          }
         } catch (e) {
-          // Ignore errors if already stopped
+          // Ignore errors if already stopped or doesn't exist
+          console.log('Cleanup error (ignored):', e);
         }
         recordingRef.current = null;
         setRecording(null);
@@ -61,6 +66,11 @@ export default function CreateCardScreen({ navigation }: any) {
         clearInterval(recordingTimerRef.current);
         recordingTimerRef.current = null;
       }
+      
+      // Reset recording state
+      setIsRecording(false);
+      setRecordingDuration(0);
+      setRecordingUri(null);
       
       const permission = await Audio.requestPermissionsAsync();
       if (!permission.granted) {
