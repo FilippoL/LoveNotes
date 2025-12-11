@@ -99,8 +99,8 @@ service cloud.firestore {
       allow delete: if false; // Cards are never deleted, only marked as read
     }
     
-    // Draw history collection
-    match /drawHistory/{pairId}/{drawId} {
+    // Draw history collection - structure: drawHistory/{pairId}/draws/{drawId}
+    match /drawHistory/{pairId}/draws/{drawId} {
       allow read: if isAuthenticated() && isUserInPair(pairId);
       allow create: if isAuthenticated() 
                     && request.resource.data.keys().hasAll(['cardId', 'drawnAt', 'viewedBy'])

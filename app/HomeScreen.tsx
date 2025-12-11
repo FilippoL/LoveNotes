@@ -138,7 +138,7 @@ export default function HomeScreen({ navigation }: any) {
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <Text style={styles.greeting}>Hello, {user?.email?.split('@')[0]}</Text>
+          <Text style={styles.greeting}>Hello, {user?.displayName || user?.email?.split('@')[0] || 'User'}</Text>
           <TouchableOpacity
             style={styles.settingsIconButton}
             onPress={() => navigation.navigate('Settings')}

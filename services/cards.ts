@@ -274,8 +274,11 @@ class CardService {
     allowed: boolean;
     remainingMinutes: number;
   }> {
+    // Reference the subcollection: drawHistory/{pairId}/draws
+    const pairDocRef = doc(db, DRAW_HISTORY_COLLECTION, pairId);
+    const drawsRef = collection(pairDocRef, 'draws');
     const q = query(
-      collection(db, DRAW_HISTORY_COLLECTION, pairId),
+      drawsRef,
       where('viewedBy', '==', userId),
       orderBy('drawnAt', 'desc'),
       limit(1)
@@ -303,7 +306,10 @@ class CardService {
    * Record a draw in history
    */
   private async recordDraw(pairId: string, cardId: string, viewedBy: string): Promise<void> {
-    const historyRef = doc(collection(db, DRAW_HISTORY_COLLECTION, pairId));
+    // Reference the subcollection: drawHistory/{pairId}/draws/{drawId}
+    const pairDocRef = doc(db, DRAW_HISTORY_COLLECTION, pairId);
+    const drawsRef = collection(pairDocRef, 'draws');
+    const historyRef = doc(drawsRef);
     await setDoc(historyRef, {
       cardId,
       viewedBy,
@@ -315,8 +321,12 @@ class CardService {
    * Get recent draw history
    */
   async getRecentDraws(pairId: string, limitCount: number = 5): Promise<any[]> {
+    // Reference the subcollection: drawHistory/{pairId}/draws/{drawId}
+    // First get the pair document, then its draws subcollection
+    const pairDocRef = doc(db, DRAW_HISTORY_COLLECTION, pairId);
+    const drawsRef = collection(pairDocRef, 'draws');
     const q = query(
-      collection(db, DRAW_HISTORY_COLLECTION, pairId),
+      drawsRef,
       orderBy('drawnAt', 'desc'),
       limit(limitCount)
     );

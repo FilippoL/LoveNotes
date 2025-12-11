@@ -2,6 +2,7 @@
 export interface User {
   id: string;
   email: string;
+  displayName?: string;
   publicKey: string;
   partnerId: string | null;
   connectionStatus: ConnectionStatus;
