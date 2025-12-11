@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { partnerService } from '../services/partner';
@@ -26,58 +26,112 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
   const [partner, setPartner] = useState<User | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('unpaired');
   const [loading, setLoading] = useState<boolean>(true);
+  const loadingRef = useRef(false);
+  const currentPartnerIdRef = useRef<string | null>(null);
 
-  // Load partner data when user changes
+  // Memoize loadPartner to prevent infinite loops
+  const loadPartner = useCallback(async (partnerId: string, userId: string) => {
+    // Prevent concurrent loads
+    if (loadingRef.current) return;
+    
+    // Skip if already loading the same partner
+    if (currentPartnerIdRef.current === partnerId) {
+      return;
+    }
+
+    loadingRef.current = true;
+    currentPartnerIdRef.current = partnerId;
+    setLoading(true);
+
+    try {
+      const partnerData = await partnerService.getPartner(userId, partnerId);
+      setPartner((prevPartner) => {
+        // Only update if partner actually changed
+        if (prevPartner?.id !== partnerData?.id) {
+          return partnerData;
+        }
+        return prevPartner;
+      });
+    } catch (error) {
+      console.error('Error loading partner:', error);
+      setPartner(null);
+      currentPartnerIdRef.current = null;
+    } finally {
+      setLoading(false);
+      loadingRef.current = false;
+    }
+  }, []);
+
+  // Initialize state when user changes
   useEffect(() => {
     if (!user) {
       setPartner(null);
       setConnectionStatus('unpaired');
       setLoading(false);
+      loadingRef.current = false;
+      currentPartnerIdRef.current = null;
       return;
     }
 
-    setConnectionStatus(user.connectionStatus);
-    loadPartner();
-  }, [user]);
+    // Update connectionStatus only if it changed
+    const newStatus = user.connectionStatus || 'unpaired';
+    setConnectionStatus((prevStatus) => {
+      if (prevStatus !== newStatus) {
+        return newStatus;
+      }
+      return prevStatus;
+    });
+
+    // Load partner if connected
+    if (user.partnerId && newStatus === 'connected' && user.id) {
+      if (currentPartnerIdRef.current !== user.partnerId) {
+        loadPartner(user.partnerId, user.id);
+      }
+    } else {
+      setPartner(null);
+      setLoading(false);
+      loadingRef.current = false;
+      currentPartnerIdRef.current = null;
+    }
+  }, [user?.id, user?.partnerId, user?.connectionStatus, loadPartner]);
 
   // Listen to user document changes for connection status updates
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      return;
+    }
 
     const unsubscribe = onSnapshot(doc(db, 'users', user.id), (docSnapshot) => {
-      if (docSnapshot.exists()) {
-        const userData = docSnapshot.data() as Omit<User, 'id'>;
-        setConnectionStatus(userData.connectionStatus || 'unpaired');
+      if (!docSnapshot.exists()) {
+        return;
+      }
 
-        // Reload partner if connection status changed
-        if (userData.partnerId && userData.connectionStatus === 'connected') {
-          loadPartner();
-        } else {
-          setPartner(null);
+      const userData = docSnapshot.data() as Omit<User, 'id'>;
+      const newConnectionStatus = userData.connectionStatus || 'unpaired';
+      const newPartnerId = userData.partnerId;
+      
+      // Update connectionStatus only if it changed
+      setConnectionStatus((prevStatus) => {
+        if (prevStatus !== newConnectionStatus) {
+          return newConnectionStatus;
         }
+        return prevStatus;
+      });
+
+      // Load partner if connected and has partnerId
+      if (newPartnerId && newConnectionStatus === 'connected') {
+        // Only load if partnerId changed
+        if (currentPartnerIdRef.current !== newPartnerId) {
+          loadPartner(newPartnerId, user.id);
+        }
+      } else {
+        setPartner(null);
+        currentPartnerIdRef.current = null;
       }
     });
 
     return () => unsubscribe();
-  }, [user?.id]);
-
-  const loadPartner = async () => {
-    if (!user?.partnerId) {
-      setPartner(null);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const partnerData = await partnerService.getPartner(user.id, user.partnerId);
-      setPartner(partnerData);
-    } catch (error) {
-      console.error('Error loading partner:', error);
-      setPartner(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [user?.id, loadPartner]);
 
   const generateInviteCode = async (): Promise<string> => {
     if (!user) {
