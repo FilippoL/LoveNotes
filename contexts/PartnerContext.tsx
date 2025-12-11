@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { partnerService } from '../services/partner';
 import { useAuth } from './AuthContext';
@@ -160,7 +160,26 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
     }
 
     await partnerService.acceptInviteCode(code, user);
-    // Partner will be reloaded via snapshot listener
+    // Refresh user data to get updated partnerId and connectionStatus
+    // The snapshot listener will also update, but this ensures immediate update
+    if (user.id) {
+      // Force reload partner after a short delay to allow Firestore to sync
+      setTimeout(() => {
+        const userDoc = doc(db, 'users', user.id);
+        getDoc(userDoc).then((docSnapshot) => {
+          if (docSnapshot.exists()) {
+            const userData = docSnapshot.data() as Omit<User, 'id'>;
+            const newPartnerId = userData.partnerId;
+            const newConnectionStatus = userData.connectionStatus || 'unpaired';
+            
+            setConnectionStatus(newConnectionStatus);
+            if (newPartnerId && newConnectionStatus === 'connected') {
+              loadPartner(newPartnerId, user.id);
+            }
+          }
+        });
+      }, 500);
+    }
   };
 
   const breakup = async (): Promise<void> => {
