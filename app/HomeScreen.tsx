@@ -22,6 +22,10 @@ export default function HomeScreen({ navigation }: any) {
   const [recentCards, setRecentCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasCards, setHasCards] = useState<boolean | null>(null);
+  const [cooldownInfo, setCooldownInfo] = useState<{
+    allowed: boolean;
+    remainingMinutes: number;
+  } | null>(null);
   const hasNavigatedRef = useRef(false);
   const hasLoadedRef = useRef(false);
 
@@ -45,6 +49,7 @@ export default function HomeScreen({ navigation }: any) {
           hasLoadedRef.current = true;
           loadRecentCards();
           checkHasCards();
+          checkCooldown();
         }
       } else {
         hasLoadedRef.current = false;
@@ -80,12 +85,29 @@ export default function HomeScreen({ navigation }: any) {
     }
   };
 
+  const checkCooldown = async () => {
+    if (!user?.partnerId || !user?.id) return;
+
+    try {
+      const info = await cardService.checkCooldown(user.partnerId, user.id);
+      setCooldownInfo(info);
+    } catch (error) {
+      console.error('Error checking cooldown:', error);
+      // If index error, set cooldown to allowed (will be checked again when index is ready)
+      setCooldownInfo({ allowed: true, remainingMinutes: 0 });
+    }
+  };
+
   const handleAddCard = () => {
     navigation.navigate('CreateCard');
   };
 
   const handleDrawCard = async () => {
     if (!user?.partnerId || !user?.id || !partner) return;
+
+    if (!cooldownInfo?.allowed) {
+      return; // Button should be disabled
+    }
 
     try {
       // Get shared secret
@@ -111,7 +133,8 @@ export default function HomeScreen({ navigation }: any) {
         Alert.alert('No Cards', 'There are no cards available to draw.');
       }
 
-      // Refresh recent cards
+      // Refresh cooldown and recent cards
+      await checkCooldown();
       await loadRecentCards();
     } catch (error: any) {
       console.error('Error drawing card:', error);
@@ -157,13 +180,18 @@ export default function HomeScreen({ navigation }: any) {
           style={[
             styles.actionButton,
             styles.drawButton,
-            (loading || hasCards === false) && styles.buttonDisabled,
+            (!cooldownInfo?.allowed || loading || hasCards === false) && styles.buttonDisabled,
           ]}
           onPress={handleDrawCard}
-          disabled={loading || hasCards === false}
+          disabled={!cooldownInfo?.allowed || loading || hasCards === false}
         >
           <Text style={styles.actionButtonIcon}>🎴</Text>
           <Text style={styles.actionButtonText}>Draw Card</Text>
+          {cooldownInfo && !cooldownInfo.allowed && (
+            <Text style={styles.cooldownText}>
+              {cooldownInfo.remainingMinutes}m
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -271,6 +299,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
+  },
+  cooldownText: {
+    color: '#fff',
+    fontSize: 12,
+    marginTop: 4,
+    opacity: 0.8,
   },
   recentSection: {
     paddingHorizontal: 24,

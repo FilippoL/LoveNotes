@@ -30,7 +30,9 @@ export default function CreateCardScreen({ navigation }: any) {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [recordingUri, setRecordingUri] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
   const [saving, setSaving] = useState(false);
+  const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleTemplateSelect = (templateId: string) => {
     const template = CARD_TEMPLATES.find((t) => t.id === templateId);
@@ -94,14 +96,33 @@ export default function CreateCardScreen({ navigation }: any) {
 
     try {
       setIsRecording(false);
+      
+      // Clear timer
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+        recordingTimerRef.current = null;
+      }
+      
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
       setRecordingUri(uri || null);
       setRecording(null);
+      
+      // Reset duration
+      setRecordingDuration(0);
     } catch (error) {
       Alert.alert('Error', 'Failed to stop recording');
     }
   };
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleSave = async () => {
     if (!user?.partnerId || !partner) {
@@ -265,21 +286,28 @@ export default function CreateCardScreen({ navigation }: any) {
         {cardType === 'voice' && (
           <View style={styles.voiceSection}>
             {!recordingUri ? (
-              <TouchableOpacity
-                style={styles.recordButton}
-                onPress={isRecording ? stopRecording : startRecording}
-              >
-                <Text style={styles.recordButtonText}>
-                  {isRecording ? '⏹ Stop Recording' : '🎤 Start Recording'}
-                </Text>
+              <View style={styles.recordingContainer}>
+                <TouchableOpacity
+                  style={styles.recordButton}
+                  onPress={isRecording ? stopRecording : startRecording}
+                >
+                  <Text style={styles.recordButtonText}>
+                    {isRecording ? '⏹ Stop Recording' : '🎤 Start Recording'}
+                  </Text>
+                  {isRecording && (
+                    <ActivityIndicator
+                      size="small"
+                      color="#fff"
+                      style={styles.recordingIndicator}
+                    />
+                  )}
+                </TouchableOpacity>
                 {isRecording && (
-                  <ActivityIndicator
-                    size="small"
-                    color="#fff"
-                    style={styles.recordingIndicator}
-                  />
+                  <Text style={styles.recordingTimer}>
+                    {recordingDuration}s / 45s
+                  </Text>
                 )}
-              </TouchableOpacity>
+              </View>
             ) : (
               <View style={styles.recordingComplete}>
                 <Text style={styles.recordingCompleteText}>✓ Recording saved</Text>
