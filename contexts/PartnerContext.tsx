@@ -102,8 +102,10 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
       return;
     }
 
+    let isSubscribed = true;
+
     const unsubscribe = onSnapshot(doc(db, 'users', user.id), (docSnapshot) => {
-      if (!docSnapshot.exists()) {
+      if (!isSubscribed || !docSnapshot.exists()) {
         return;
       }
 
@@ -121,17 +123,22 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
 
       // Load partner if connected and has partnerId
       if (newPartnerId && newConnectionStatus === 'connected') {
-        // Only load if partnerId changed
-        if (currentPartnerIdRef.current !== newPartnerId) {
+        // Only load if partnerId changed and we're not already loading
+        if (currentPartnerIdRef.current !== newPartnerId && !loadingRef.current) {
           loadPartner(newPartnerId, user.id);
         }
       } else {
-        setPartner(null);
-        currentPartnerIdRef.current = null;
+        if (currentPartnerIdRef.current !== null) {
+          setPartner(null);
+          currentPartnerIdRef.current = null;
+        }
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      isSubscribed = false;
+      unsubscribe();
+    };
   }, [user?.id]);
 
   const generateInviteCode = async (): Promise<string> => {
