@@ -48,13 +48,33 @@ export default function CreateCardScreen({ navigation }: any) {
     const existingRecording = recordingRef.current || recording;
     if (existingRecording) {
       try {
-        const status = await existingRecording.getStatusAsync();
+        // Try to get status, but don't fail if it's already gone
+        let status;
+        try {
+          status = await existingRecording.getStatusAsync();
+        } catch (e) {
+          // Recording might already be unloaded
+          status = null;
+        }
+        
         // Stop if recording, unload if prepared or in any state
-        if (status.isRecording) {
+        if (status?.isRecording) {
           await existingRecording.stopAndUnloadAsync();
-        } else {
+        } else if (status) {
           // If prepared but not recording, just unload
           await existingRecording.unloadAsync();
+        } else {
+          // If we can't get status, try both methods
+          try {
+            await existingRecording.stopAndUnloadAsync();
+          } catch (e1) {
+            try {
+              await existingRecording.unloadAsync();
+            } catch (e2) {
+              // Both failed, recording is likely already cleaned up
+              console.log('Recording already cleaned up');
+            }
+          }
         }
       } catch (e) {
         // Ignore errors if already stopped or doesn't exist
@@ -75,8 +95,8 @@ export default function CreateCardScreen({ navigation }: any) {
     setRecordingDuration(0);
     setRecordingUri(null);
     
-    // Small delay to ensure cleanup completes
-    await new Promise(resolve => setTimeout(resolve, 200));
+    // Longer delay to ensure cleanup completes
+    await new Promise(resolve => setTimeout(resolve, 500));
   };
 
   const startRecording = async () => {
@@ -584,4 +604,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
 
