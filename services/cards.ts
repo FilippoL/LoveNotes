@@ -119,14 +119,19 @@ class CardService {
       combined.set(nonce);
       combined.set(encryptedData, nonce.length);
 
-      // Convert Uint8Array to Blob for Firebase Storage (React Native compatible)
-      // Create a Blob from the Uint8Array
-      const blob = new Blob([combined], { type: 'application/octet-stream' });
-
       // Upload to Firebase Storage
+      // Note: uploadBytes accepts Uint8Array, but React Native might need it wrapped
+      // Try using the Uint8Array directly first
       const fileName = `${pairId}/${Date.now()}.encrypted`;
       const storageRef = ref(storage, `voice/${fileName}`);
-      await uploadBytes(storageRef, blob);
+      
+      // Convert to ArrayBuffer for compatibility
+      const arrayBuffer = combined.buffer.slice(
+        combined.byteOffset,
+        combined.byteOffset + combined.byteLength
+      );
+      
+      await uploadBytes(storageRef, arrayBuffer);
 
       // Get download URL
       const voiceUrl = await getDownloadURL(storageRef);
