@@ -84,13 +84,16 @@ export default function ConnectScreen({ navigation }: any) {
 
     setAccepting(true);
     try {
-      // Accept invite code - this updates Firestore
+      // Accept invite code - this updates Firestore and state
       await acceptInviteCode(inputCode.trim());
       
-      // Ensure user data is refreshed
+      // Ensure user data is refreshed - wait for it to complete
       await refreshUser();
       
       setInputCode('');
+      
+      // Wait a moment for React state to propagate
+      await new Promise(resolve => setTimeout(resolve, 200));
       
       // Show success message
       // Navigation will happen automatically via useEffect when state updates
