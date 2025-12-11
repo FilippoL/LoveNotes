@@ -36,7 +36,15 @@ function MainNavigator() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Connect" component={ConnectScreen} />
       <Stack.Screen name="Home" component={HomeScreen} />
-      <Stack.Screen name="CreateCard" component={CreateCardScreen} />
+      <Stack.Screen 
+        name="CreateCard" 
+        component={CreateCardScreen}
+        options={{
+          headerShown: true,
+          title: 'Create Card',
+          headerBackTitle: 'Back',
+        }}
+      />
       <Stack.Screen name="ViewCard" component={ViewCardScreen} />
       <Stack.Screen 
         name="Settings" 

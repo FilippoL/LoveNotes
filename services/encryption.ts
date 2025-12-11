@@ -1,5 +1,6 @@
 import nacl from 'tweetnacl';
 import { encodeBase64, decodeBase64 } from 'tweetnacl-util';
+import * as naclUtil from 'tweetnacl-util';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { KeyPair, SharedSecret } from '../types';
 
@@ -90,7 +91,7 @@ class EncryptionService {
    */
   async encryptText(text: string, sharedSecret: Uint8Array): Promise<string> {
     const nonce = nacl.randomBytes(24);
-    const messageBytes = nacl.util.decodeUTF8(text);
+    const messageBytes = naclUtil.decodeUTF8(text);
     const encrypted = nacl.secretbox(messageBytes, nonce, sharedSecret);
 
     if (!encrypted) {
@@ -118,7 +119,7 @@ class EncryptionService {
       throw new Error('Decryption failed - invalid key or corrupted data');
     }
 
-    return nacl.util.encodeUTF8(decrypted);
+    return naclUtil.encodeUTF8(decrypted);
   }
 
   /**

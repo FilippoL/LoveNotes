@@ -21,6 +21,7 @@ export default function HomeScreen({ navigation }: any) {
   const { partner, connectionStatus } = usePartner();
   const [recentCards, setRecentCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasCards, setHasCards] = useState<boolean | null>(null);
   const [cooldownInfo, setCooldownInfo] = useState<{
     allowed: boolean;
     remainingMinutes: number;
@@ -48,6 +49,7 @@ export default function HomeScreen({ navigation }: any) {
           hasLoadedRef.current = true;
           loadRecentCards();
           checkCooldown();
+          checkHasCards();
         }
       } else {
         hasLoadedRef.current = false;
@@ -78,6 +80,20 @@ export default function HomeScreen({ navigation }: any) {
       setCooldownInfo(info);
     } catch (error) {
       console.error('Error checking cooldown:', error);
+      // If index error, set cooldown to allowed (will be checked again when index is ready)
+      setCooldownInfo({ allowed: true, remainingMinutes: 0 });
+    }
+  };
+
+  const checkHasCards = async () => {
+    if (!user?.partnerId) return;
+
+    try {
+      const allCards = await cardService.getAllCards(user.partnerId);
+      setHasCards(allCards.length > 0);
+    } catch (error) {
+      console.error('Error checking cards:', error);
+      setHasCards(null);
     }
   };
 
@@ -163,10 +179,10 @@ export default function HomeScreen({ navigation }: any) {
           style={[
             styles.actionButton,
             styles.drawButton,
-            (!cooldownInfo?.allowed || loading) && styles.buttonDisabled,
+            (!cooldownInfo?.allowed || loading || hasCards === false) && styles.buttonDisabled,
           ]}
           onPress={handleDrawCard}
-          disabled={!cooldownInfo?.allowed || loading}
+          disabled={!cooldownInfo?.allowed || loading || hasCards === false}
         >
           <Text style={styles.actionButtonIcon}>🎴</Text>
           <Text style={styles.actionButtonText}>Draw Card</Text>
