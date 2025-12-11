@@ -70,39 +70,21 @@ export default function ConnectScreen({ navigation }: any) {
       await acceptInviteCode(inputCode.trim());
       setInputCode('');
       
-      // Wait for state to update, then show success and navigate
-      let attempts = 0;
-      const checkAndNavigate = () => {
-        attempts++;
-        if (connectionStatus === 'connected' && user?.partnerId) {
-          Alert.alert('Success', 'You are now connected with your partner!', [
-            {
-              text: 'OK',
-              onPress: () => {
-                navigation.replace('Home');
-              },
+      // Wait for state updates to complete, then navigate
+      // The acceptInviteCode function updates both AuthContext and PartnerContext
+      // Give it time to propagate
+      setTimeout(() => {
+        Alert.alert('Success', 'You are now connected with your partner!', [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Navigate after alert is dismissed
+              navigation.replace('Home');
             },
-          ]);
-          setAccepting(false);
-        } else if (attempts < 10) {
-          // Wait up to 2 seconds for state to update
-          setTimeout(checkAndNavigate, 200);
-        } else {
-          // Timeout - navigate anyway
-          Alert.alert('Success', 'You are now connected with your partner!', [
-            {
-              text: 'OK',
-              onPress: () => {
-                navigation.replace('Home');
-              },
-            },
-          ]);
-          setAccepting(false);
-        }
-      };
-      
-      // Start checking after a short delay
-      setTimeout(checkAndNavigate, 300);
+          },
+        ]);
+        setAccepting(false);
+      }, 800);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to accept invite code');
       setAccepting(false);
