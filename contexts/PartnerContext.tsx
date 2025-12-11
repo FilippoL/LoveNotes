@@ -119,6 +119,7 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
       // Update connectionStatus only if it changed
       setConnectionStatus((prevStatus) => {
         if (prevStatus !== newConnectionStatus) {
+          console.log('[PartnerContext] Snapshot listener - connectionStatus changed from', prevStatus, 'to', newConnectionStatus, 'partnerId:', newPartnerId);
           return newConnectionStatus;
         }
         return prevStatus;
@@ -187,14 +188,15 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
           const newConnectionStatus = userData.connectionStatus || 'unpaired';
           const newPartnerId = userData.partnerId;
           
-          // Update connection status immediately
-          setConnectionStatus(newConnectionStatus);
-          
-          // Load partner if connected
-          if (newPartnerId && newConnectionStatus === 'connected') {
-            currentPartnerIdRef.current = null; // Reset to allow loading
-            loadPartner(newPartnerId, user.id);
-          }
+      // Update connection status immediately
+      console.log('[PartnerContext] acceptInviteCode - Setting connectionStatus to:', newConnectionStatus, 'partnerId:', newPartnerId);
+      setConnectionStatus(newConnectionStatus);
+      
+      // Load partner if connected
+      if (newPartnerId && newConnectionStatus === 'connected') {
+        currentPartnerIdRef.current = null; // Reset to allow loading
+        loadPartner(newPartnerId, user.id);
+      }
         }
       } catch (error) {
         console.error('Error updating connection status after pairing:', error);
