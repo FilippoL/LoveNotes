@@ -45,6 +45,23 @@ export default function CreateCardScreen({ navigation }: any) {
 
   const startRecording = async () => {
     try {
+      // Clean up any existing recording first
+      if (recordingRef.current) {
+        try {
+          await recordingRef.current.stopAndUnloadAsync();
+        } catch (e) {
+          // Ignore errors if already stopped
+        }
+        recordingRef.current = null;
+        setRecording(null);
+      }
+      
+      // Clear any existing timer
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+        recordingTimerRef.current = null;
+      }
+      
       const permission = await Audio.requestPermissionsAsync();
       if (!permission.granted) {
         Alert.alert('Permission Denied', 'Please grant microphone permission');
