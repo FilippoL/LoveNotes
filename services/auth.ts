@@ -40,6 +40,7 @@ class AuthService {
       // Create user document in Firestore
       const userData: Omit<User, 'id'> = {
         email,
+        displayName: displayName || undefined,
         publicKey: keypair.publicKey,
         partnerId: null,
         connectionStatus: 'unpaired',
