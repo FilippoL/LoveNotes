@@ -1,0 +1,26 @@
+{
+  "cli": {
+    "version": ">= 5.9.0"
+  },
+  "build": {
+    "production": {
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "android": {
+        "buildType": "apk"
+      },
+      "distribution": "internal"
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
+
