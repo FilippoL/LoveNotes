@@ -111,8 +111,9 @@ class CardService {
 
     try {
       // Read audio file as base64 using expo-file-system (avoids ArrayBuffer issues)
+      // Note: expo-file-system v19 uses 'base64' as a string, not EncodingType.Base64
       const base64Audio = await FileSystem.readAsStringAsync(audioUri, {
-        encoding: FileSystem.EncodingType.Base64,
+        encoding: 'base64',
       });
       
       if (!base64Audio) {
