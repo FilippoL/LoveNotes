@@ -59,6 +59,12 @@ jobs:
           expo-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
       
+      - name: Configure EAS project
+        run: |
+          npx eas-cli build:configure
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      
       - name: Build Android APK
         run: |
           npx eas-cli build --platform android --profile production --non-interactive
