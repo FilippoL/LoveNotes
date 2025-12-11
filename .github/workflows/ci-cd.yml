@@ -59,11 +59,12 @@ jobs:
           expo-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
       
-      - name: Configure EAS project
+      - name: Link EAS project
         run: |
-          npx eas-cli build:configure
+          npx eas-cli init --id ee157879-ff3b-4933-87f6-4092be7ae7b4 --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        continue-on-error: true
       
       - name: Build Android APK
         run: |
