@@ -27,7 +27,7 @@
 
 ### Phase 3: Main App Features ✅ COMPLETED
 - [x] Card creation (text + voice + templates) ✅
-- [x] Card drawing with cooldown logic ✅
+- [x] Card drawing (cooldown temporarily disabled for testing) ✅
 - [x] Deck rotation algorithm ✅
 - [x] History and card sharing ✅
 - [x] Breakup functionality ✅
@@ -38,6 +38,8 @@
 - [x] Settings Screen with logout/breakup ✅
 - [x] Share Card feature (Expo-compatible) ✅
 - [x] SafeAreaView on all screens ✅
+- [x] Partner pairing flow with auto-navigation ✅
+- [x] Voice card storage in Firestore (avoiding Storage Blob issues) ✅
 
 ### Phase 4: Polish & Production (Pending)
 - [ ] Voice recording/playback optimization
@@ -66,6 +68,18 @@
 - ESLint configuration fixed (removed invalid react-native environment)
 - react-native-view-shot replaced with Expo-compatible sharing solution
 - All screens now use SafeAreaView to prevent content overlap with device notch/camera
+- Cooldown temporarily disabled for testing (will be re-enabled later)
+
+## Recent Fixes (Latest Session)
+1. ✅ **Partner Pairing Flow**: Fixed navigation after successful pairing - removed infinite loops, added proper state synchronization
+2. ✅ **Firestore Rules**: Fixed permission issues for partner pairing and invite code deletion
+3. ✅ **Draw Card Button**: Added check to disable button when no cards exist
+4. ✅ **Navigation**: Added back buttons to CreateCard and ViewCard screens
+5. ✅ **Username Display**: Fixed to show displayName instead of email
+6. ✅ **Voice Card Storage**: Changed from Firebase Storage to Firestore to avoid Blob/ArrayBuffer issues in React Native
+7. ✅ **Voice Card Playback**: Fixed to use temp file instead of Blob for React Native compatibility
+8. ✅ **Firestore Indexes**: Added missing indexes for cards and drawHistory queries
+9. ✅ **Cooldown**: Temporarily disabled for testing purposes
 
 ## Testing Status
 - Unit tests: Not started

@@ -68,12 +68,12 @@
 
 2. ✅ **Card Service** (`services/cards.ts`):
    - Text card creation with encryption
-   - Voice card creation with encryption and Storage upload
+   - Voice card creation with encryption (stored in Firestore, not Storage)
    - Card rotation algorithm (unread cards first, then reset)
-   - 15-minute cooldown between draws
    - Draw history tracking
    - Deck reset functionality
    - Card templates (5 pre-built templates)
+   - Cooldown logic temporarily disabled for testing
 
 3. ✅ **PartnerContext** (`contexts/PartnerContext.tsx`):
    - React Context for partner state management
@@ -89,13 +89,41 @@
 
 ### Completed Tasks
 1. ✅ **Connect Screen**: UI for invite code generation/scanning and QR codes
-2. ✅ **Home Screen**: Main app interface with Add/Draw buttons with cooldown timer
+2. ✅ **Home Screen**: Main app interface with Add/Draw buttons (cooldown temporarily disabled)
 3. ✅ **Create Card Screen**: Text/voice card creation with templates
 4. ✅ **View Card Screen**: Card display with decryption, voice playback, and share functionality
 5. ✅ **Settings Screen**: Partner info, breakup, and logout functionality
 6. ✅ **Share Card Feature**: Implemented using expo-sharing (Expo-compatible solution)
 7. ✅ **SafeAreaView**: Added to all screens to prevent content from covering notch/camera
 8. ✅ **Navigation**: Complete navigation flow with proper headers and back buttons
+
+## Recent Changes (Latest Session - Bug Fixes)
+
+### Critical Fixes
+1. ✅ **Partner Pairing Flow**: 
+   - Fixed infinite refresh loops by consolidating useEffect hooks and using refs
+   - Fixed navigation after pairing by ensuring state updates before navigation
+   - Fixed permission issues in Firestore rules for partner updates
+   - Fixed "user already paired" error by allowing re-pairing with same partner
+
+2. ✅ **Voice Card Creation**:
+   - Fixed Blob/ArrayBuffer issues by storing encrypted voice data in Firestore instead of Storage
+   - Fixed expo-file-system deprecation warnings by using legacy API
+   - Fixed audio playback by using temp files instead of Blob URLs
+   - Modified encryption service to accept Uint8Array directly (avoiding ArrayBuffer)
+
+3. ✅ **UI/UX Improvements**:
+   - Added back navigation to CreateCard and ViewCard screens
+   - Fixed username display to show displayName instead of email
+   - Added check to disable Draw button when no cards exist
+   - Removed template label from card display
+
+4. ✅ **Firestore**:
+   - Added missing indexes for cards queries (pairId + createdAt)
+   - Fixed drawHistory structure (draws subcollection)
+   - Updated indexes for draws collection group
+
+5. ✅ **Cooldown**: Temporarily disabled for testing (will be re-enabled later)
 
 ## Recent Changes (Bug Fixes & Compatibility)
 
