@@ -211,12 +211,6 @@ export default function ViewCardScreen({ route, navigation }: any) {
           </View>
         )}
 
-        {card.templateUsed && (
-          <Text style={styles.templateLabel}>
-            Template: {card.templateUsed}
-          </Text>
-        )}
-
         <Text style={styles.dateLabel}>
           {new Date(card.createdAt).toLocaleDateString()}
         </Text>
