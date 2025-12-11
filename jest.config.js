@@ -11,5 +11,6 @@ module.exports = {
     '!**/coverage/**',
     '!**/*.config.js',
   ],
+  passWithNoTests: true,
 };
 
