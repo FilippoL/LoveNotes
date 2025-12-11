@@ -11,8 +11,7 @@ import {
   limit,
   serverTimestamp,
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import * as FileSystem from 'expo-file-system';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { encodeBase64 } from 'tweetnacl-util';
 import { db, storage } from './firebase';
 import { encryptionService } from './encryption';
@@ -133,35 +132,11 @@ class CardService {
       combined.set(encryptedData, nonce.length);
 
       // Upload to Firebase Storage
-      // Write encrypted data to a temporary file, then upload the file
-      // This avoids Blob/ArrayBuffer issues in React Native
-      const tempFileName = `${FileSystem.cacheDirectory}${Date.now()}.encrypted`;
-      const base64Data = encodeBase64(combined);
-      await FileSystem.writeAsStringAsync(tempFileName, base64Data, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-
-      // Upload the file using its URI
+      // Convert to base64 and use uploadString (works in React Native)
+      const base64String = encodeBase64(combined);
       const fileName = `${pairId}/${Date.now()}.encrypted`;
       const storageRef = ref(storage, `voice/${fileName}`);
-      const fileUri = await FileSystem.getUriAsync(tempFileName);
-      
-      // Read file as base64 and upload
-      const fileBase64 = await FileSystem.readAsStringAsync(fileUri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      
-      // Convert base64 back to Uint8Array for uploadBytes
-      const uploadData = new Uint8Array(
-        atob(fileBase64)
-          .split('')
-          .map((c) => c.charCodeAt(0))
-      );
-      
-      await uploadBytes(storageRef, uploadData);
-      
-      // Clean up temp file
-      await FileSystem.deleteAsync(tempFileName, { idempotent: true });
+      await uploadString(storageRef, base64String, 'base64');
 
       // Get download URL
       const voiceUrl = await getDownloadURL(storageRef);
