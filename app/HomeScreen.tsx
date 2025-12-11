@@ -178,11 +178,18 @@ export default function HomeScreen({ navigation }: any) {
           onPress={handleAddCard}
           activeOpacity={0.8}
         >
-          <Image 
-            source={{ uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAABmJLR0QA/wD/AP+gvaeTAAAHTElEQVR4nO2dbWxb5RmGr+e1TZJ2tBrawpYlcUI7Oug00arSxpowO1m/GHXCVto/sD9M++i6FjGxT1AjNqQxaSoTFBDi34omdYLGBALNaGzSFm1joEoTqTalS5x0H4xttB2Fhtjn2Y8kXeR2tOfDPuXNuST/iu7nvZXLPvY5Oq8NERERERERERERERERERERERHhP/8FIwUq5gTtlIMAAAAASUVORK5CYII=' }} 
-            style={styles.actionButtonIcon}
-            resizeMode="contain"
-          />
+          <View style={styles.iconContainer}>
+            <Image 
+              source={{ 
+                uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAABmJLR0QA/wD/AP+gvaeTAAAHTElEQVR4nO2dbWxb5RmGr+e1TZJ2tBrawpYlcUI7Oug00arSxpowO1m/GHXCVto/sD9M++i6FjGxT1AjNqQxaSoTFBDi34omdYLGBALNaGzSFm1joEoTqTalS5x0H4xttB2Fhtjn2Y8kXeR2tOfDPuXNuST/iu7nvZXLPvY5Oq8NERERERERERERERERERERERHhP/8FIwUq5gTtlIMAAAAASUVORK5CYII='
+              }} 
+              style={styles.actionButtonIcon}
+              resizeMode="contain"
+              onError={(e) => {
+                console.log('Add card icon error:', e.nativeEvent.error);
+              }}
+            />
+          </View>
           <Text style={styles.actionButtonText}>Add Card</Text>
         </TouchableOpacity>
 
@@ -196,14 +203,18 @@ export default function HomeScreen({ navigation }: any) {
           disabled={!cooldownInfo?.allowed || loading || hasCards === false}
           activeOpacity={0.8}
         >
-          <Image 
-            source={{ 
-              uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAF80lEQVR4nO2dWYgdRRSGf6PONaMRY8DRDJqYEKNgUIiigkZfoogPUXGLIm4hhqyi44OiEjQuIHF/VERRUIkLLgQmbqBmUaIhoqLCQFwJiWtiYjTOkQMl3Cpq5t7uPl2nqq0P6iFzZ/pU/X+6+3T1qbpAeVoAlgBYD2AnAIq87TR9XQygBw2jH8CmCESmku0TM4ZG0ErcDDLt46acKUsjEJOE2iI0gA0RCElCbR0awI4IhCShxmNJHmpYSx5tASkbYqMtIGVDbLQFpGyIjbaAlA2x0RaQsiE22gJSNsRGW0DKhthoC0jZEBttASkbYqMtIGVDbLQFpGyIjbaAlA2x0RaQsiE22gJSNsRGW0DKhthoC0jZEBttASkbYqMtIGVDbLQFpGyIjbaAlA2xoYa18UgcaUF+BvAagBcBDCkY8jwSR1KMBwEc3HbsfQDMA/BXYFOuQsJIifDwKDGWBTbkNwBTkChSAhzSYWHp9sCmfABgPySIxOAHu4jzeGBDuN2OBJEY+JNdxDlXwZC/AZyKxJAY+AtdxOkB8EsAQ853/v01gIOQEKEuWczTAQw5G8Cw87MnkBASInzYZaw5AQxhHvX8/BIkgoQIX3YZ6wCTkdVtCMfZ7HlgPRIJICHC1gLxngtgCHM8gN3OZ2sAjEHkSIiwp0C8iwMZwgx4Pr8RkSMlBF8muqG35v242uGz4U3n8z8BnICIkRLi8AIxXwpkCMw+Wu4swWcAxiJSpIQ4tkDMKwIawlxQcO5NFSkhTikQc5znhlunITCzCe2/x88q5yFCpIQ4p2Dc1wMbciCArzzZYR8iQ0qIog9e1wQ2hDnZ827mFUSGlBDzC8YdX9OLq04sF+h7rUgJcXOJ2IMKhvA7krXO3/wBYDoiQUqIFSViX69gCHO0ZwpnYyy7mkoJ8ViJ2H0A9ioYwlzt+du7EQFSQjxTMv67Sob45tX+AXAWlJESgkt/yrBE0RCuA9ji/P232rVdUkK8VzJ+v+eFUihDmFnmzJA420WQEoLfP5RlnaIhzP2e41wOJaSE+KZCHwaUDWmZDf3bj/MrgMlQQEoITiPLMlnwslWW4wDs8lyG90WiW40PV+z8RoE+/F5Ri8WeY3LVZVDWC54lVbKTWwXi8xN4FbgW+Q1P1rU/AiKZdvITcBlmC8RfKKBHnymIaD/uZQiI74ZWtp1YsS+fVogtOfVxX4nKTFH6zTfUVDWk6lPu8gpmTIQcMwVT+tL0mG+oWVvhRn9+xT7MKBBrh+nrwhomBVtOLC7KSIKnalgo84VzTH7/Hpoepw98T0mCR2pIEe9xjskVKqE5xunDd0iEO52O31HD9XuXqeUKySKnDy8jEW5yOr5S6LhDznGnISzu1wjyo0ESzKup7H9B2zE/ClyPO8uz6CeJIm3mIqfzqwSPfZqpZAldYbiqxjHVzmyn81xHmzJHmTOifUxnICFO8tTMpsy9znj4XpIU45wiBZ7xPRRpMtZTlH0tEsSdcuHC5hS5zhnH9pgr5EfjAWcgzyJNNjnj4MtXkpzumWNq3+8kBXypLt/gk2SMeYkjPYUSkqRTXR+3OQPaUmCJW4ypLp8xSXOYZwFOANIg+VR3JFZ63iFMQdw0JtX1McGzl8mayNeFNybVHYn5QssUtFJdfhfTKLiM5i1nkMNm+VpsnNmkVHc0jgDwgzPYvQDmIi4al+p2eljc7QyYK8xvQLypLp8xjWaOZ9D/lfrzEmVNGpvqduJSszGNa8pQiXXtUkz0ZIOcbf1vmG2KoMnTVpt3KqHgYvBXnT5sa1qq223d7uYRTOH2PoArO2w1W5XeETa9ieW+Fpxe8zQ/2qpbvry9A+AuABeabZQmVJgXa5lqSN4j63tPvA2hK9tjZKYRnZQbr/iapC1GbPeWQeEFn922zwFM1RYg5vvLClMgUbcRe8wXBiS1j68mk8zq14fMSib+n/xThb21+L7FWzC9DeAWs+wiKP8C/nWI4L6S6+AAAAAASUVORK5CYII='
-            }} 
-            style={styles.actionButtonIcon}
-            resizeMode="contain"
-            onError={(e) => console.log('Image error:', e.nativeEvent.error)}
-          />
+          <View style={styles.iconContainer}>
+            <Image 
+              source={{ 
+                uri: 'data:image/png;base64,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'
+              }} 
+              style={styles.actionButtonIcon}
+              resizeMode="contain"
+              onError={(e) => {
+                console.log('Draw card icon error:', e.nativeEvent.error);
+              }}
+            />
+          </View>
           <Text style={styles.actionButtonText}>Draw Card</Text>
           {cooldownInfo && !cooldownInfo.allowed && (
             <Text style={styles.cooldownText}>
