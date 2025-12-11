@@ -98,33 +98,47 @@ export default function CreateCardScreen({ navigation }: any) {
 
       // Try to create recording, with retry on "only one recording" error
       let newRecording: Audio.Recording;
+      const recordingOptions = {
+        android: {
+          extension: '.m4a',
+          outputFormat: Audio.AndroidOutputFormat.MPEG_4,
+          audioEncoder: Audio.AndroidAudioEncoder.AAC,
+          sampleRate: 44100,
+          numberOfChannels: 2,
+          bitRate: 128000,
+        },
+        ios: {
+          extension: '.m4a',
+          outputFormat: Audio.IOSOutputFormat.MPEG4AAC,
+          audioQuality: Audio.IOSAudioQuality.MAX,
+          sampleRate: 44100,
+          numberOfChannels: 2,
+          bitRate: 128000,
+          linearPCMBitDepth: 16,
+          linearPCMIsBigEndian: false,
+          linearPCMIsFloat: false,
+        },
+        web: {
+          mimeType: 'audio/webm',
+          bitsPerSecond: 128000,
+        },
+      };
+      
       try {
-        const result = await Audio.Recording.createAsync({
-          android: {
-            extension: '.m4a',
-            outputFormat: Audio.AndroidOutputFormat.MPEG_4,
-            audioEncoder: Audio.AndroidAudioEncoder.AAC,
-            sampleRate: 44100,
-            numberOfChannels: 2,
-            bitRate: 128000,
-          },
-          ios: {
-            extension: '.m4a',
-            outputFormat: Audio.IOSOutputFormat.MPEG4AAC,
-            audioQuality: Audio.IOSAudioQuality.MAX,
-            sampleRate: 44100,
-            numberOfChannels: 2,
-            bitRate: 128000,
-            linearPCMBitDepth: 16,
-            linearPCMIsBigEndian: false,
-            linearPCMIsFloat: false,
-          },
-          web: {
-            mimeType: 'audio/webm',
-            bitsPerSecond: 128000,
-          },
+        const result = await Audio.Recording.createAsync(recordingOptions);
+        newRecording = result.recording;
+      } catch (createError: any) {
+        // If we get "only one recording" error, cleanup and retry once
+        if (createError.message && createError.message.includes('Only one Recording object')) {
+          console.log('Retrying after cleanup...');
+          await cleanupRecording();
+          const retryResult = await Audio.Recording.createAsync(recordingOptions);
+          newRecording = retryResult.recording;
+        } else {
+          throw createError;
         }
-      );
+      }
+      
       setRecording(newRecording);
       recordingRef.current = newRecording;
       setIsRecording(true);
