@@ -11,7 +11,7 @@ import {
   limit,
   serverTimestamp,
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, uploadString, getDownloadURL } from 'firebase/storage';
 import { db, storage } from './firebase';
 import { encryptionService } from './encryption';
 import type { Card, CardType, CardTemplate } from '../types';
@@ -119,11 +119,15 @@ class CardService {
       combined.set(nonce);
       combined.set(encryptedData, nonce.length);
 
-      // Upload to Firebase Storage
-      // Use Uint8Array directly - Firebase Storage accepts this in React Native
+      // Convert to base64 for React Native compatibility
+      // Firebase Storage uploadBytes doesn't work well with Uint8Array in React Native
+      // So we convert to base64 and use uploadString instead
+      const base64String = btoa(String.fromCharCode(...combined));
+
+      // Upload to Firebase Storage using base64 string
       const fileName = `${pairId}/${Date.now()}.encrypted`;
       const storageRef = ref(storage, `voice/${fileName}`);
-      await uploadBytes(storageRef, combined);
+      await uploadString(storageRef, base64String, 'base64');
 
       // Get download URL
       const voiceUrl = await getDownloadURL(storageRef);
