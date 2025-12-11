@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -22,13 +22,17 @@ export default function ConnectScreen({ navigation }: any) {
   const [inputCode, setInputCode] = useState('');
   const [generating, setGenerating] = useState(false);
   const [accepting, setAccepting] = useState(false);
+  const hasNavigatedRef = useRef(false);
 
   useEffect(() => {
-    // If already connected, navigate away
-    if (connectionStatus === 'connected') {
+    // If already connected, navigate away (only once)
+    if (connectionStatus === 'connected' && user?.partnerId && !hasNavigatedRef.current) {
+      hasNavigatedRef.current = true;
       navigation.replace('Home');
+    } else if (connectionStatus !== 'connected') {
+      hasNavigatedRef.current = false;
     }
-  }, [connectionStatus, navigation]);
+  }, [connectionStatus, user?.partnerId]);
 
   const handleGenerateInvite = async () => {
     if (!user) {

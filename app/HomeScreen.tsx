@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -25,16 +25,32 @@ export default function HomeScreen({ navigation }: any) {
     allowed: boolean;
     remainingMinutes: number;
   } | null>(null);
+  const hasNavigatedRef = useRef(false);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     if (connectionStatus !== 'connected' || !user?.partnerId) {
-      navigation.replace('Connect');
+      if (!hasNavigatedRef.current) {
+        hasNavigatedRef.current = true;
+        hasLoadedRef.current = false;
+        navigation.replace('Connect');
+      }
       return;
+    } else {
+      hasNavigatedRef.current = false;
     }
 
-    loadRecentCards();
-    checkCooldown();
-  }, [user, partner, connectionStatus]);
+    // Load data when conditions are met (reset flag when partnerId changes)
+    if (connectionStatus === 'connected' && user?.partnerId) {
+      if (!hasLoadedRef.current) {
+        hasLoadedRef.current = true;
+        loadRecentCards();
+        checkCooldown();
+      }
+    } else {
+      hasLoadedRef.current = false;
+    }
+  }, [connectionStatus, user?.partnerId]);
 
   const loadRecentCards = async () => {
     if (!user?.partnerId) return;
@@ -99,8 +115,8 @@ export default function HomeScreen({ navigation }: any) {
       await checkCooldown();
       await loadRecentCards();
     } catch (error: any) {
-      // Error handling
       console.error('Error drawing card:', error);
+      Alert.alert('Error', error.message || 'Failed to draw card. Please try again.');
     }
   };
 
