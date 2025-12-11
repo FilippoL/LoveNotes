@@ -85,6 +85,7 @@ export default function CreateCardScreen({ navigation }: any) {
         }
       );
       setRecording(newRecording);
+      recordingRef.current = newRecording;
       setIsRecording(true);
       setRecordingDuration(0);
       
@@ -94,7 +95,13 @@ export default function CreateCardScreen({ navigation }: any) {
           const newDuration = prev + 1;
           // Auto-stop at 45 seconds
           if (newDuration >= 45) {
-            stopRecording();
+            // Clear timer first
+            if (recordingTimerRef.current) {
+              clearInterval(recordingTimerRef.current);
+              recordingTimerRef.current = null;
+            }
+            // Stop recording
+            handleStopRecording();
             return 45;
           }
           return newDuration;
@@ -105,8 +112,9 @@ export default function CreateCardScreen({ navigation }: any) {
     }
   };
 
-  const stopRecording = async () => {
-    if (!recording && !isRecording) return;
+  const handleStopRecording = async () => {
+    const currentRecording = recordingRef.current;
+    if (!currentRecording && !isRecording) return;
 
     try {
       setIsRecording(false);
@@ -117,11 +125,12 @@ export default function CreateCardScreen({ navigation }: any) {
         recordingTimerRef.current = null;
       }
       
-      if (recording) {
-        await recording.stopAndUnloadAsync();
-        const uri = recording.getURI();
+      if (currentRecording) {
+        await currentRecording.stopAndUnloadAsync();
+        const uri = currentRecording.getURI();
         setRecordingUri(uri || null);
         setRecording(null);
+        recordingRef.current = null;
       }
       
       // Reset duration
@@ -129,6 +138,10 @@ export default function CreateCardScreen({ navigation }: any) {
     } catch (error) {
       Alert.alert('Error', 'Failed to stop recording');
     }
+  };
+
+  const stopRecording = async () => {
+    await handleStopRecording();
   };
 
   // Cleanup timer on unmount
