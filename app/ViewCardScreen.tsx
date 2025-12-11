@@ -76,17 +76,15 @@ export default function ViewCardScreen({ route, navigation }: any) {
   };
 
   const handlePlayVoice = async () => {
-    if (!card?.voiceUrl) return;
+    if (!card?.encryptedContent) return;
 
     try {
       if (sound) {
         await sound.unloadAsync();
       }
 
-      // Download encrypted voice file (stored as base64 string)
-      const response = await fetch(card.voiceUrl);
-      const base64String = await response.text();
-      const encryptedData = decodeBase64(base64String);
+      // Decode encrypted voice data from Firestore (stored as base64 string)
+      const encryptedData = decodeBase64(card.encryptedContent);
 
       // Extract nonce (first 24 bytes) and encrypted data
       const nonce = encryptedData.slice(0, 24);

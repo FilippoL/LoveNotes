@@ -11,10 +11,9 @@ import {
   limit,
   serverTimestamp,
 } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import * as FileSystem from 'expo-file-system/legacy';
 import { encodeBase64, decodeBase64 } from 'tweetnacl-util';
-import { db, storage } from './firebase';
+import { db } from './firebase';
 import { encryptionService } from './encryption';
 import type { Card, CardType, CardTemplate } from '../types';
 
@@ -135,23 +134,17 @@ class CardService {
       combined.set(nonce);
       combined.set(encryptedData, nonce.length);
 
-      // Upload to Firebase Storage
-      // Convert to base64 and use uploadString (works in React Native)
-      const base64String = encodeBase64(combined);
-      const fileName = `${pairId}/${Date.now()}.encrypted`;
-      const storageRef = ref(storage, `voice/${fileName}`);
-      await uploadString(storageRef, base64String, 'base64');
-
-      // Get download URL
-      const voiceUrl = await getDownloadURL(storageRef);
+      // Store encrypted voice data directly in Firestore as base64 string
+      // This avoids Firebase Storage Blob issues in React Native
+      // Firestore 1MB limit should be sufficient for encrypted 60-second voice files
+      const encryptedContentBase64 = encodeBase64(combined);
 
       // Create card document
       const cardData: Omit<Card, 'id'> = {
         pairId,
         creatorId,
-        encryptedContent: '', // Not used for voice cards
+        encryptedContent: encryptedContentBase64, // Store encrypted voice data here
         contentType: 'voice',
-        voiceUrl,
         isRead: false,
         createdAt: new Date(),
       };
