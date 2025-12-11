@@ -457,6 +457,11 @@ const styles = StyleSheet.create({
   recordingIndicator: {
     marginLeft: 8,
   },
+  recordingTimer: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6366f1',
+  },
   recordingComplete: {
     alignItems: 'center',
   },
