@@ -7,6 +7,8 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Image,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
@@ -170,9 +172,17 @@ export default function HomeScreen({ navigation }: any) {
         )}
       </View>
 
-      <View style={styles.actions}>
-        <TouchableOpacity style={styles.actionButton} onPress={handleAddCard}>
-          <Text style={styles.actionButtonIcon}>✍️</Text>
+      <View style={styles.actionsContainer}>
+        <TouchableOpacity 
+          style={styles.actionButton} 
+          onPress={handleAddCard}
+          activeOpacity={0.8}
+        >
+          <Image 
+            source={require('../assets/icons/add-card-icon.png')} 
+            style={styles.actionButtonIcon}
+            resizeMode="contain"
+          />
           <Text style={styles.actionButtonText}>Add Card</Text>
         </TouchableOpacity>
 
@@ -184,8 +194,13 @@ export default function HomeScreen({ navigation }: any) {
           ]}
           onPress={handleDrawCard}
           disabled={!cooldownInfo?.allowed || loading || hasCards === false}
+          activeOpacity={0.8}
         >
-          <Text style={styles.actionButtonIcon}>🎴</Text>
+          <Image 
+            source={require('../assets/icons/draw-card-icon.png')} 
+            style={styles.actionButtonIcon}
+            resizeMode="contain"
+          />
           <Text style={styles.actionButtonText}>Draw Card</Text>
           {cooldownInfo && !cooldownInfo.allowed && (
             <Text style={styles.cooldownText}>
@@ -270,20 +285,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
-  actions: {
+  actionsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     marginBottom: 32,
     gap: 16,
+    flex: 1,
+    minHeight: Dimensions.get('window').height * 0.6,
   },
   actionButton: {
     flex: 1,
     backgroundColor: '#6366f1',
-    borderRadius: 16,
-    padding: 24,
+    borderRadius: 24,
+    padding: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 120,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   drawButton: {
     backgroundColor: '#8b5cf6',
@@ -292,13 +316,15 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   actionButtonIcon: {
-    fontSize: 48,
-    marginBottom: 8,
+    width: 120,
+    height: 120,
+    marginBottom: 16,
   },
   actionButtonText: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 24,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   cooldownText: {
     color: '#fff',
