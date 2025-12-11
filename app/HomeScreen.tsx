@@ -185,7 +185,7 @@ export default function HomeScreen({ navigation }: any) {
               resizeMode="contain"
             />
           </View>
-          <Text style={styles.actionButtonText}>Add Card</Text>
+          <Text style={styles.actionButtonText}>Write a Note</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -205,7 +205,7 @@ export default function HomeScreen({ navigation }: any) {
               resizeMode="contain"
             />
           </View>
-          <Text style={styles.actionButtonText}>Draw Card</Text>
+          <Text style={styles.actionButtonText}>Draw a Note</Text>
           {cooldownInfo && !cooldownInfo.allowed && (
             <Text style={styles.cooldownText}>
               {cooldownInfo.remainingMinutes}m
