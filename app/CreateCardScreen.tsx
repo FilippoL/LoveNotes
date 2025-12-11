@@ -107,8 +107,14 @@ export default function CreateCardScreen({ navigation }: any) {
           return newDuration;
         });
       }, 1000);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to start recording');
+    } catch (error: any) {
+      console.error('Error starting recording:', error);
+      Alert.alert('Error', `Failed to start recording: ${error.message || 'Unknown error'}`);
+      // Reset state on error
+      setIsRecording(false);
+      setRecording(null);
+      recordingRef.current = null;
+      setRecordingDuration(0);
     }
   };
 
