@@ -3,6 +3,7 @@ node_modules/
 lib/
 *.config.js
 *.config.ts
+jest.setup.js
 .expo/
 dist/
 build/
