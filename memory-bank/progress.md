@@ -27,7 +27,7 @@
 
 ### Phase 3: Main App Features ✅ COMPLETED
 - [x] Card creation (text + voice + templates) ✅
-- [x] Card drawing (cooldown temporarily disabled for testing) ✅
+- [x] Card drawing with 15-minute cooldown ✅
 - [x] Deck rotation algorithm ✅
 - [x] History and card sharing ✅
 - [x] Breakup functionality ✅
@@ -68,7 +68,7 @@
 - ESLint configuration fixed (removed invalid react-native environment)
 - react-native-view-shot replaced with Expo-compatible sharing solution
 - All screens now use SafeAreaView to prevent content overlap with device notch/camera
-- Cooldown temporarily disabled for testing (will be re-enabled later)
+- Cooldown restored: 15-minute timer between card draws
 
 ## Recent Fixes (Latest Session)
 1. ✅ **Partner Pairing Flow**: Fixed navigation after successful pairing - removed infinite loops, added proper state synchronization
@@ -79,7 +79,10 @@
 6. ✅ **Voice Card Storage**: Changed from Firebase Storage to Firestore to avoid Blob/ArrayBuffer issues in React Native
 7. ✅ **Voice Card Playback**: Fixed to use temp file instead of Blob for React Native compatibility
 8. ✅ **Firestore Indexes**: Added missing indexes for cards and drawHistory queries
-9. ✅ **Cooldown**: Temporarily disabled for testing purposes
+9. ✅ **Cooldown**: Restored 15-minute cooldown timer between card draws
+10. ✅ **Audio Quality**: Improved recording settings (44.1kHz, 128kbps, stereo)
+11. ✅ **Recording Limit**: Added 45-second maximum recording duration with timer display
+12. ✅ **Audio Format**: Preserved audio format through encryption/decryption cycle
 
 ## Testing Status
 - Unit tests: Not started

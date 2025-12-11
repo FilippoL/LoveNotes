@@ -73,7 +73,7 @@
    - Draw history tracking
    - Deck reset functionality
    - Card templates (5 pre-built templates)
-   - Cooldown logic temporarily disabled for testing
+   - 15-minute cooldown between card draws
 
 3. ✅ **PartnerContext** (`contexts/PartnerContext.tsx`):
    - React Context for partner state management
@@ -89,8 +89,8 @@
 
 ### Completed Tasks
 1. ✅ **Connect Screen**: UI for invite code generation/scanning and QR codes
-2. ✅ **Home Screen**: Main app interface with Add/Draw buttons (cooldown temporarily disabled)
-3. ✅ **Create Card Screen**: Text/voice card creation with templates
+2. ✅ **Home Screen**: Main app interface with Add/Draw buttons and 15-minute cooldown timer
+3. ✅ **Create Card Screen**: Text/voice card creation with templates, 45-second recording limit
 4. ✅ **View Card Screen**: Card display with decryption, voice playback, and share functionality
 5. ✅ **Settings Screen**: Partner info, breakup, and logout functionality
 6. ✅ **Share Card Feature**: Implemented using expo-sharing (Expo-compatible solution)
@@ -123,7 +123,12 @@
    - Fixed drawHistory structure (draws subcollection)
    - Updated indexes for draws collection group
 
-5. ✅ **Cooldown**: Temporarily disabled for testing (will be re-enabled later)
+5. ✅ **Cooldown**: Restored 15-minute cooldown timer between card draws
+6. ✅ **Audio Quality Improvements**:
+   - High-quality recording settings (44.1kHz sample rate, 128kbps bitrate, stereo)
+   - Audio format preservation through encryption/decryption
+   - Proper format detection and storage
+7. ✅ **Recording Limit**: Added 45-second maximum recording duration with visual timer
 
 ## Recent Changes (Bug Fixes & Compatibility)
 
