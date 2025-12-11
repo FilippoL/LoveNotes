@@ -17,7 +17,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 export default function ConnectScreen({ navigation }: any) {
   const { generateInviteCode, acceptInviteCode, loading, connectionStatus } = usePartner();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [inputCode, setInputCode] = useState('');
   const [generating, setGenerating] = useState(false);
@@ -67,24 +67,29 @@ export default function ConnectScreen({ navigation }: any) {
 
     setAccepting(true);
     try {
+      // Accept invite code - this updates Firestore
       await acceptInviteCode(inputCode.trim());
+      
+      // Ensure user data is refreshed
+      await refreshUser();
+      
       setInputCode('');
       
-      // Wait for state updates to complete, then navigate
-      // The acceptInviteCode function updates both AuthContext and PartnerContext
-      // Give it time to propagate
-      setTimeout(() => {
-        Alert.alert('Success', 'You are now connected with your partner!', [
-          {
-            text: 'OK',
-            onPress: () => {
-              // Navigate after alert is dismissed
-              navigation.replace('Home');
+      // Wait for React state to update, then show alert and navigate
+      // Use requestAnimationFrame to wait for next render cycle
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          Alert.alert('Success', 'You are now connected with your partner!', [
+            {
+              text: 'OK',
+              onPress: () => {
+                navigation.replace('Home');
+              },
             },
-          },
-        ]);
-        setAccepting(false);
-      }, 800);
+          ]);
+          setAccepting(false);
+        }, 100);
+      });
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to accept invite code');
       setAccepting(false);
