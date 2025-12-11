@@ -206,12 +206,8 @@ class CardService {
     viewerId: string,
     sharedSecret: Uint8Array
   ): Promise<Card | null> {
-    // Check cooldown
-    const canDraw = await this.checkCooldown(pairId, viewerId);
-    if (!canDraw.allowed) {
-      throw new Error(`Please wait ${canDraw.remainingMinutes} minutes before drawing again`);
-    }
-
+    // Cooldown removed for testing - will be re-enabled later
+    
     // Get unread cards
     const unreadCards = await this.getUnreadCards(pairId);
 
