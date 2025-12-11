@@ -99,8 +99,7 @@ export default function CreateCardScreen({ navigation }: any) {
       // Try to create recording, with retry on "only one recording" error
       let newRecording: Audio.Recording;
       try {
-        const result = await Audio.Recording.createAsync(
-        {
+        const result = await Audio.Recording.createAsync({
           android: {
             extension: '.m4a',
             outputFormat: Audio.AndroidOutputFormat.MPEG_4,
