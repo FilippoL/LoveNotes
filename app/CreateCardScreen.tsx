@@ -86,13 +86,27 @@ export default function CreateCardScreen({ navigation }: any) {
       );
       setRecording(newRecording);
       setIsRecording(true);
+      setRecordingDuration(0);
+      
+      // Start timer to track recording duration
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingDuration((prev) => {
+          const newDuration = prev + 1;
+          // Auto-stop at 45 seconds
+          if (newDuration >= 45) {
+            stopRecording();
+            return 45;
+          }
+          return newDuration;
+        });
+      }, 1000);
     } catch (error) {
       Alert.alert('Error', 'Failed to start recording');
     }
   };
 
   const stopRecording = async () => {
-    if (!recording) return;
+    if (!recording && !isRecording) return;
 
     try {
       setIsRecording(false);
@@ -103,10 +117,12 @@ export default function CreateCardScreen({ navigation }: any) {
         recordingTimerRef.current = null;
       }
       
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
-      setRecordingUri(uri || null);
-      setRecording(null);
+      if (recording) {
+        await recording.stopAndUnloadAsync();
+        const uri = recording.getURI();
+        setRecordingUri(uri || null);
+        setRecording(null);
+      }
       
       // Reset duration
       setRecordingDuration(0);
