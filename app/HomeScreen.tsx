@@ -29,23 +29,13 @@ export default function HomeScreen({ navigation }: any) {
   const hasLoadedRef = useRef(false);
 
   useEffect(() => {
-    // Only redirect if we're definitely not connected
-    // Give it a moment for state to sync after navigation
-    const checkConnection = () => {
+    // Give state time to sync after navigation from Connect screen
+    const timeoutId = setTimeout(() => {
       if (connectionStatus !== 'connected' || !user?.partnerId) {
-        // Only navigate away if we've given state time to update
-        // This prevents immediate redirect when navigating from Connect screen
         if (!hasNavigatedRef.current) {
           hasNavigatedRef.current = true;
           hasLoadedRef.current = false;
-          // Small delay to allow state to sync
-          setTimeout(() => {
-            if (connectionStatus !== 'connected' || !user?.partnerId) {
-              navigation.replace('Connect');
-            } else {
-              hasNavigatedRef.current = false;
-            }
-          }, 1000);
+          navigation.replace('Connect');
         }
         return;
       } else {
@@ -62,9 +52,9 @@ export default function HomeScreen({ navigation }: any) {
       } else {
         hasLoadedRef.current = false;
       }
-    };
+    }, 500); // Wait 500ms for state to sync
 
-    checkConnection();
+    return () => clearTimeout(timeoutId);
   }, [connectionStatus, user?.partnerId]);
 
   const loadRecentCards = async () => {
