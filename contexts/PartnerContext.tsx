@@ -62,7 +62,7 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
     }
   }, []);
 
-  // Initialize state when user changes (only on mount or user ID change)
+  // Initialize state when user ID changes (not when user object reference changes)
   useEffect(() => {
     if (!user) {
       setPartner(null);
@@ -73,13 +73,15 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
       return;
     }
 
-    // Initialize connectionStatus from user object (only once)
+    // Don't override connectionStatus if it's already set (snapshot listener is source of truth)
+    // Only initialize if still unpaired
     const newStatus = user.connectionStatus || 'unpaired';
     setConnectionStatus((prevStatus) => {
-      // Only set initial status if it's still unpaired
+      // Only update if we're still unpaired and user has a different status
       if (prevStatus === 'unpaired' && newStatus !== 'unpaired') {
         return newStatus;
       }
+      // Don't override if already connected - snapshot listener handles updates
       return prevStatus;
     });
 
@@ -88,7 +90,8 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
       if (currentPartnerIdRef.current !== user.partnerId) {
         loadPartner(user.partnerId, user.id);
       }
-    } else {
+    } else if (!user.partnerId) {
+      // Only clear partner if user doesn't have partnerId
       setPartner(null);
       setLoading(false);
       loadingRef.current = false;
