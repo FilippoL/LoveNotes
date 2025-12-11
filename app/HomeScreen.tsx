@@ -29,27 +29,42 @@ export default function HomeScreen({ navigation }: any) {
   const hasLoadedRef = useRef(false);
 
   useEffect(() => {
-    if (connectionStatus !== 'connected' || !user?.partnerId) {
-      if (!hasNavigatedRef.current) {
-        hasNavigatedRef.current = true;
-        hasLoadedRef.current = false;
-        navigation.replace('Connect');
+    // Only redirect if we're definitely not connected
+    // Give it a moment for state to sync after navigation
+    const checkConnection = () => {
+      if (connectionStatus !== 'connected' || !user?.partnerId) {
+        // Only navigate away if we've given state time to update
+        // This prevents immediate redirect when navigating from Connect screen
+        if (!hasNavigatedRef.current) {
+          hasNavigatedRef.current = true;
+          hasLoadedRef.current = false;
+          // Small delay to allow state to sync
+          setTimeout(() => {
+            if (connectionStatus !== 'connected' || !user?.partnerId) {
+              navigation.replace('Connect');
+            } else {
+              hasNavigatedRef.current = false;
+            }
+          }, 1000);
+        }
+        return;
+      } else {
+        hasNavigatedRef.current = false;
       }
-      return;
-    } else {
-      hasNavigatedRef.current = false;
-    }
 
-    // Load data when conditions are met (reset flag when partnerId changes)
-    if (connectionStatus === 'connected' && user?.partnerId) {
-      if (!hasLoadedRef.current) {
-        hasLoadedRef.current = true;
-        loadRecentCards();
-        checkCooldown();
+      // Load data when conditions are met
+      if (connectionStatus === 'connected' && user?.partnerId) {
+        if (!hasLoadedRef.current) {
+          hasLoadedRef.current = true;
+          loadRecentCards();
+          checkCooldown();
+        }
+      } else {
+        hasLoadedRef.current = false;
       }
-    } else {
-      hasLoadedRef.current = false;
-    }
+    };
+
+    checkConnection();
   }, [connectionStatus, user?.partnerId]);
 
   const loadRecentCards = async () => {

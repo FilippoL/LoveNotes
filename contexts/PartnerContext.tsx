@@ -169,9 +169,29 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
 
     await partnerService.acceptInviteCode(code, user);
     
-    // The snapshot listener will update connectionStatus automatically
-    // Just refresh AuthContext user data to get updated partnerId
+    // Refresh AuthContext user data to get updated partnerId
     await refreshUser();
+    
+    // Also manually update connectionStatus immediately since snapshot listener might be delayed
+    if (user.id) {
+      try {
+        const userDoc = doc(db, 'users', user.id);
+        const docSnapshot = await getDoc(userDoc);
+        if (docSnapshot.exists()) {
+          const userData = docSnapshot.data() as Omit<User, 'id'>;
+          const newConnectionStatus = userData.connectionStatus || 'unpaired';
+          setConnectionStatus(newConnectionStatus);
+          
+          // Load partner if connected
+          if (userData.partnerId && newConnectionStatus === 'connected') {
+            currentPartnerIdRef.current = null; // Reset to allow loading
+            loadPartner(userData.partnerId, user.id);
+          }
+        }
+      } catch (error) {
+        console.error('Error updating connection status after pairing:', error);
+      }
+    }
   };
 
   const breakup = async (): Promise<void> => {

@@ -69,18 +69,20 @@ export default function ConnectScreen({ navigation }: any) {
     try {
       await acceptInviteCode(inputCode.trim());
       setInputCode('');
-      // Navigate directly after successful pairing
-      Alert.alert('Success', 'You are now connected with your partner!', [
-        {
-          text: 'OK',
-          onPress: () => {
-            navigation.replace('Home');
+      
+      // Wait a moment for state to update, then navigate
+      setTimeout(() => {
+        Alert.alert('Success', 'You are now connected with your partner!', [
+          {
+            text: 'OK',
+            onPress: () => {
+              navigation.replace('Home');
+            },
           },
-        },
-      ]);
+        ]);
+      }, 500);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to accept invite code');
-    } finally {
       setAccepting(false);
     }
   };
