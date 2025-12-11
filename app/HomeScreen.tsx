@@ -329,10 +329,16 @@ const styles = StyleSheet.create({
   buttonDisabled: {
     opacity: 0.5,
   },
-  actionButtonIcon: {
+  iconContainer: {
     width: 120,
     height: 120,
     marginBottom: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  actionButtonIcon: {
+    width: 120,
+    height: 120,
   },
   actionButtonText: {
     color: '#fff',
