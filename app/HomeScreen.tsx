@@ -67,10 +67,6 @@ export default function HomeScreen({ navigation }: any) {
     }
   };
 
-  const checkCooldown = async () => {
-    // Cooldown disabled for testing - always allow drawing
-    setCooldownInfo({ allowed: true, remainingMinutes: 0 });
-  };
 
   const checkHasCards = async () => {
     if (!user?.partnerId) return;
@@ -275,12 +271,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
-  },
-  cooldownText: {
-    color: '#fff',
-    fontSize: 12,
-    marginTop: 4,
-    opacity: 0.8,
   },
   recentSection: {
     paddingHorizontal: 24,
