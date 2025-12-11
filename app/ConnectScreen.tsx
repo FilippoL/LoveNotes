@@ -26,13 +26,19 @@ export default function ConnectScreen({ navigation }: any) {
 
   useEffect(() => {
     // If already connected, navigate away (only once)
-    if (connectionStatus === 'connected' && user?.partnerId && !hasNavigatedRef.current) {
-      hasNavigatedRef.current = true;
-      navigation.replace('Home');
+    // Check connectionStatus first - it's updated immediately after pairing
+    if (connectionStatus === 'connected') {
+      if (!hasNavigatedRef.current) {
+        hasNavigatedRef.current = true;
+        // Small delay to ensure state is fully updated
+        setTimeout(() => {
+          navigation.replace('Home');
+        }, 300);
+      }
     } else if (connectionStatus !== 'connected') {
       hasNavigatedRef.current = false;
     }
-  }, [connectionStatus, user?.partnerId]);
+  }, [connectionStatus]);
 
   const handleGenerateInvite = async () => {
     if (!user) {
