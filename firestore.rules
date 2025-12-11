@@ -51,7 +51,9 @@ service cloud.firestore {
     
     // Users collection
     match /users/{userId} {
-      allow read: if isAuthenticated() && request.auth.uid == userId;
+      // Allow authenticated users to read user documents (needed for pairing checks)
+      // Users can read their own document or other users' documents
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated() 
                     && request.auth.uid == userId
                     && request.resource.data.keys().hasAll(['email', 'publicKey'])
@@ -106,6 +108,19 @@ service cloud.firestore {
                     && isUserInPair(pairId);
     }
     
+    // Helper function to check if user is accepting an invite (pair exists with invite creator)
+    function isAcceptingInvite(inviteCreatorId) {
+      let currentUserId = request.auth.uid;
+      // Sort IDs to match pairId format
+      let pairId = currentUserId < inviteCreatorId 
+                   ? currentUserId + '_' + inviteCreatorId
+                   : inviteCreatorId + '_' + currentUserId;
+      let pairDoc = get(/databases/$(database)/documents/pairs/$(pairId));
+      return pairDoc != null 
+             && (pairDoc.data.user1Id == currentUserId || pairDoc.data.user2Id == currentUserId)
+             && (pairDoc.data.user1Id == inviteCreatorId || pairDoc.data.user2Id == inviteCreatorId);
+    }
+    
     // Invite codes collection
     match /inviteCodes/{codeId} {
       allow read: if isAuthenticated(); // Anyone authenticated can read invite codes
@@ -114,8 +129,10 @@ service cloud.firestore {
                     && request.resource.data.userId == request.auth.uid
                     && request.resource.data.publicKey is string
                     && request.resource.data.code is string;
+      // Allow creator to delete, or allow deletion if user is accepting the invite (pair exists)
       allow delete: if isAuthenticated() 
-                    && resource.data.userId == request.auth.uid; // Users can delete their own invite codes
+                    && (resource.data.userId == request.auth.uid // Creator can delete
+                        || isAcceptingInvite(resource.data.userId)); // Accepter can delete after pairing
     }
   }
 }
