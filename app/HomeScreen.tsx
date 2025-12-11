@@ -27,6 +27,7 @@ export default function HomeScreen({ navigation }: any) {
   const [cooldownInfo, setCooldownInfo] = useState<{
     allowed: boolean;
     remainingMinutes: number;
+    remainingSeconds: number;
   } | null>(null);
   const hasNavigatedRef = useRef(false);
   const hasLoadedRef = useRef(false);
@@ -96,9 +97,42 @@ export default function HomeScreen({ navigation }: any) {
     } catch (error) {
       console.error('Error checking cooldown:', error);
       // If index error, set cooldown to allowed (will be checked again when index is ready)
-      setCooldownInfo({ allowed: true, remainingMinutes: 0 });
+      setCooldownInfo({ allowed: true, remainingMinutes: 0, remainingSeconds: 0 });
     }
   };
+
+  // Update cooldown display every second when on cooldown
+  useEffect(() => {
+    if (!cooldownInfo || cooldownInfo.allowed) return;
+
+    const interval = setInterval(() => {
+      setCooldownInfo((prev) => {
+        if (!prev || prev.allowed) return prev;
+        
+        let newSeconds = prev.remainingSeconds - 1;
+        let newMinutes = prev.remainingMinutes;
+
+        if (newSeconds < 0) {
+          if (newMinutes > 0) {
+            newMinutes -= 1;
+            newSeconds = 59;
+          } else {
+            // Cooldown expired, check again
+            checkCooldown();
+            return { allowed: true, remainingMinutes: 0, remainingSeconds: 0 };
+          }
+        }
+
+        return {
+          allowed: false,
+          remainingMinutes: newMinutes,
+          remainingSeconds: newSeconds,
+        };
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [cooldownInfo?.allowed, cooldownInfo?.remainingMinutes, cooldownInfo?.remainingSeconds]);
 
   const handleAddCard = () => {
     navigation.navigate('CreateCard');
@@ -208,7 +242,7 @@ export default function HomeScreen({ navigation }: any) {
           <Text style={styles.actionButtonText}>Draw a Note</Text>
           {cooldownInfo && !cooldownInfo.allowed && (
             <Text style={styles.cooldownText}>
-              {cooldownInfo.remainingMinutes}m
+              {cooldownInfo.remainingMinutes}m {cooldownInfo.remainingSeconds}s
             </Text>
           )}
         </TouchableOpacity>

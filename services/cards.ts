@@ -298,6 +298,7 @@ class CardService {
   async checkCooldown(pairId: string, userId: string): Promise<{
     allowed: boolean;
     remainingMinutes: number;
+    remainingSeconds: number;
   }> {
     // Reference the subcollection: drawHistory/{pairId}/draws
     const pairDocRef = doc(db, DRAW_HISTORY_COLLECTION, pairId);
@@ -311,20 +312,23 @@ class CardService {
 
     const snapshot = await getDocs(q);
     if (snapshot.empty) {
-      return { allowed: true, remainingMinutes: 0 };
+      return { allowed: true, remainingMinutes: 0, remainingSeconds: 0 };
     }
 
     const lastDraw = snapshot.docs[0].data();
     const lastDrawTime = lastDraw.drawnAt?.toDate() || new Date(0);
     const now = new Date();
-    const minutesSinceLastDraw = (now.getTime() - lastDrawTime.getTime()) / (1000 * 60);
+    const secondsSinceLastDraw = (now.getTime() - lastDrawTime.getTime()) / 1000;
+    const cooldownSeconds = COOLDOWN_MINUTES * 60;
 
-    if (minutesSinceLastDraw >= COOLDOWN_MINUTES) {
-      return { allowed: true, remainingMinutes: 0 };
+    if (secondsSinceLastDraw >= cooldownSeconds) {
+      return { allowed: true, remainingMinutes: 0, remainingSeconds: 0 };
     }
 
-    const remainingMinutes = Math.ceil(COOLDOWN_MINUTES - minutesSinceLastDraw);
-    return { allowed: false, remainingMinutes };
+    const remainingSeconds = Math.ceil(cooldownSeconds - secondsSinceLastDraw);
+    const remainingMinutes = Math.floor(remainingSeconds / 60);
+    const remainingSecondsOnly = remainingSeconds % 60;
+    return { allowed: false, remainingMinutes, remainingSeconds: remainingSecondsOnly };
   }
 
   /**
