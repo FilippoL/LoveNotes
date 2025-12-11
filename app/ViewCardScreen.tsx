@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Audio } from 'expo-av';
 import * as Sharing from 'expo-sharing';
+import { decodeBase64 } from 'tweetnacl-util';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { usePartner } from '../contexts/PartnerContext';
@@ -82,11 +83,10 @@ export default function ViewCardScreen({ route, navigation }: any) {
         await sound.unloadAsync();
       }
 
-      // Download encrypted voice file
+      // Download encrypted voice file (stored as base64 string)
       const response = await fetch(card.voiceUrl);
-      const encryptedBlob = await response.blob();
-      const encryptedArrayBuffer = await encryptedBlob.arrayBuffer();
-      const encryptedData = new Uint8Array(encryptedArrayBuffer);
+      const base64String = await response.text();
+      const encryptedData = decodeBase64(base64String);
 
       // Extract nonce (first 24 bytes) and encrypted data
       const nonce = encryptedData.slice(0, 24);
