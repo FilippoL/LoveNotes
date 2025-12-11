@@ -161,10 +161,7 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
 
     await partnerService.acceptInviteCode(code, user);
     
-    // Refresh AuthContext user data to get updated partnerId
-    await refreshUser();
-    
-    // Refresh user data immediately to get updated partnerId and connectionStatus
+    // Refresh user data immediately from Firestore (don't refresh AuthContext to avoid loops)
     // The snapshot listener will also update, but this ensures immediate update
     if (user.id) {
       try {
@@ -193,6 +190,11 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
         // Snapshot listener will handle the update eventually
       }
     }
+    
+    // Refresh AuthContext user data after a delay to avoid immediate re-renders
+    setTimeout(async () => {
+      await refreshUser();
+    }, 500);
   };
 
   const breakup = async (): Promise<void> => {
