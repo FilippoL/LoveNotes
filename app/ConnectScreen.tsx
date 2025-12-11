@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,20 @@ export default function ConnectScreen({ navigation }: any) {
   const [inputCode, setInputCode] = useState('');
   const [generating, setGenerating] = useState(false);
   const [accepting, setAccepting] = useState(false);
+  const hasNavigatedRef = React.useRef(false);
+
+  // Auto-navigate to Home when connected
+  React.useEffect(() => {
+    if (connectionStatus === 'connected' && user?.partnerId && !hasNavigatedRef.current) {
+      hasNavigatedRef.current = true;
+      // Small delay to ensure state is fully synced
+      setTimeout(() => {
+        navigation.replace('Home');
+      }, 300);
+    } else if (connectionStatus !== 'connected') {
+      hasNavigatedRef.current = false;
+    }
+  }, [connectionStatus, user?.partnerId]);
 
   const handleGenerateInvite = async () => {
     if (!user) {
@@ -75,21 +89,10 @@ export default function ConnectScreen({ navigation }: any) {
       
       setInputCode('');
       
-      // Wait for React state to update, then show alert and navigate
-      // Use requestAnimationFrame to wait for next render cycle
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          Alert.alert('Success', 'You are now connected with your partner!', [
-            {
-              text: 'OK',
-              onPress: () => {
-                navigation.replace('Home');
-              },
-            },
-          ]);
-          setAccepting(false);
-        }, 100);
-      });
+      // Show success message
+      // Navigation will happen automatically via useEffect when state updates
+      Alert.alert('Success', 'You are now connected with your partner!');
+      setAccepting(false);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to accept invite code');
       setAccepting(false);
