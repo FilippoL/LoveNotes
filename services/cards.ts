@@ -12,6 +12,8 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import * as FileSystem from 'expo-file-system';
+import { encodeBase64 } from 'tweetnacl-util';
 import { db, storage } from './firebase';
 import { encryptionService } from './encryption';
 import type { Card, CardType, CardTemplate } from '../types';
@@ -131,13 +133,35 @@ class CardService {
       combined.set(encryptedData, nonce.length);
 
       // Upload to Firebase Storage
-      // In React Native, we need to create a Blob from the Uint8Array
+      // Write encrypted data to a temporary file, then upload the file
+      // This avoids Blob/ArrayBuffer issues in React Native
+      const tempFileName = `${FileSystem.cacheDirectory}${Date.now()}.encrypted`;
+      const base64Data = encodeBase64(combined);
+      await FileSystem.writeAsStringAsync(tempFileName, base64Data, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // Upload the file using its URI
       const fileName = `${pairId}/${Date.now()}.encrypted`;
       const storageRef = ref(storage, `voice/${fileName}`);
+      const fileUri = await FileSystem.getUriAsync(tempFileName);
       
-      // Create a Blob from Uint8Array for React Native compatibility
-      const blob = new Blob([combined], { type: 'application/octet-stream' });
-      await uploadBytes(storageRef, blob);
+      // Read file as base64 and upload
+      const fileBase64 = await FileSystem.readAsStringAsync(fileUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      
+      // Convert base64 back to Uint8Array for uploadBytes
+      const uploadData = new Uint8Array(
+        atob(fileBase64)
+          .split('')
+          .map((c) => c.charCodeAt(0))
+      );
+      
+      await uploadBytes(storageRef, uploadData);
+      
+      // Clean up temp file
+      await FileSystem.deleteAsync(tempFileName, { idempotent: true });
 
       // Get download URL
       const voiceUrl = await getDownloadURL(storageRef);
