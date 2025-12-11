@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -88,7 +88,7 @@ export default function HomeScreen({ navigation }: any) {
     }
   };
 
-  const checkCooldown = async () => {
+  const checkCooldown = useCallback(async () => {
     if (!user?.partnerId || !user?.id) return;
 
     try {
@@ -99,7 +99,7 @@ export default function HomeScreen({ navigation }: any) {
       // If index error, set cooldown to allowed (will be checked again when index is ready)
       setCooldownInfo({ allowed: true, remainingMinutes: 0, remainingSeconds: 0 });
     }
-  };
+  }, [user?.partnerId, user?.id]);
 
   // Update cooldown display every second when on cooldown
   useEffect(() => {
