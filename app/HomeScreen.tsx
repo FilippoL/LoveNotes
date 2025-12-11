@@ -320,15 +320,16 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   iconContainer: {
-    width: 120,
-    height: 120,
+    width: '100%',
+    height: 150,
     marginBottom: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
   actionButtonIcon: {
-    width: 120,
-    height: 120,
+    width: 150,
+    height: 150,
+    tintColor: '#fff',
   },
   actionButtonText: {
     color: '#fff',
