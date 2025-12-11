@@ -12,7 +12,7 @@ service cloud.firestore {
     
     function getUserPairId() {
       let userData = getUserData();
-      return userData.pairId;
+      return userData.partnerId;
     }
     
     function isUserInPair(pairId) {
