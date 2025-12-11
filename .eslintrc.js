@@ -18,6 +18,12 @@ module.exports = {
     node: true,
     browser: true,
   },
+  ignorePatterns: [
+    'functions/**',
+    'node_modules/**',
+    'lib/**',
+    '*.config.js',
+  ],
   rules: {
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
