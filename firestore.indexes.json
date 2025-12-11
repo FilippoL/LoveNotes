@@ -19,8 +19,8 @@
       ]
     },
     {
-      "collectionGroup": "drawHistory",
-      "queryScope": "COLLECTION",
+      "collectionGroup": "draws",
+      "queryScope": "COLLECTION_GROUP",
       "fields": [
         {
           "fieldPath": "viewedBy",
