@@ -1,0 +1,9 @@
+functions/
+node_modules/
+lib/
+*.config.js
+*.config.ts
+.expo/
+dist/
+build/
+
