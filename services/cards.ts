@@ -11,9 +11,7 @@ import {
   limit,
   serverTimestamp,
 } from 'firebase/firestore';
-import { ref, uploadBytes, uploadString, getDownloadURL } from 'firebase/storage';
-import * as FileSystem from 'expo-file-system';
-import { encodeBase64, decodeBase64 } from 'tweetnacl-util';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from './firebase';
 import { encryptionService } from './encryption';
 import type { Card, CardType, CardTemplate } from '../types';
@@ -105,18 +103,25 @@ class CardService {
     audioUri: string,
     sharedSecret: Uint8Array
   ): Promise<string> {
+    if (!audioUri) {
+      throw new Error('Audio URI is required');
+    }
+
     try {
-      // Read audio file as base64 using expo-file-system (avoids ArrayBuffer issues)
-      const base64Audio = await FileSystem.readAsStringAsync(audioUri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      // Read audio file using fetch
+      const response = await fetch(audioUri);
+      if (!response.ok) {
+        throw new Error(`Failed to read audio file: ${response.statusText}`);
+      }
       
-      // Convert base64 to Uint8Array for encryption
-      const audioBytes = decodeBase64(base64Audio);
+      const arrayBuffer = await response.arrayBuffer();
+      if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+        throw new Error('Audio file is empty');
+      }
 
       // Encrypt audio
       const { encryptedData, nonce } = await encryptionService.encryptVoiceFile(
-        audioBytes.buffer,
+        arrayBuffer,
         sharedSecret
       );
 
@@ -125,15 +130,14 @@ class CardService {
       combined.set(nonce);
       combined.set(encryptedData, nonce.length);
 
-      // Convert to base64 for React Native compatibility
-      // Firebase Storage uploadBytes doesn't work well with Uint8Array in React Native
-      // So we convert to base64 and use uploadString instead
-      const base64String = encodeBase64(combined);
-
-      // Upload to Firebase Storage using base64 string
+      // Upload to Firebase Storage
+      // In React Native, we need to create a Blob from the Uint8Array
       const fileName = `${pairId}/${Date.now()}.encrypted`;
       const storageRef = ref(storage, `voice/${fileName}`);
-      await uploadString(storageRef, base64String, 'base64');
+      
+      // Create a Blob from Uint8Array for React Native compatibility
+      const blob = new Blob([combined], { type: 'application/octet-stream' });
+      await uploadBytes(storageRef, blob);
 
       // Get download URL
       const voiceUrl = await getDownloadURL(storageRef);
