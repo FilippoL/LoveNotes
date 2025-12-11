@@ -106,11 +106,11 @@ class CardService {
     try {
       // Read audio file
       const response = await fetch(audioUri);
-      const arrayBuffer = await response.arrayBuffer();
+      const audioArrayBuffer = await response.arrayBuffer();
 
       // Encrypt audio
       const { encryptedData, nonce } = await encryptionService.encryptVoiceFile(
-        arrayBuffer,
+        audioArrayBuffer,
         sharedSecret
       );
 
@@ -120,18 +120,15 @@ class CardService {
       combined.set(encryptedData, nonce.length);
 
       // Upload to Firebase Storage
-      // Note: uploadBytes accepts Uint8Array, but React Native might need it wrapped
-      // Try using the Uint8Array directly first
-      const fileName = `${pairId}/${Date.now()}.encrypted`;
-      const storageRef = ref(storage, `voice/${fileName}`);
-      
       // Convert to ArrayBuffer for compatibility
-      const arrayBuffer = combined.buffer.slice(
+      const uploadBuffer = combined.buffer.slice(
         combined.byteOffset,
         combined.byteOffset + combined.byteLength
       );
       
-      await uploadBytes(storageRef, arrayBuffer);
+      const fileName = `${pairId}/${Date.now()}.encrypted`;
+      const storageRef = ref(storage, `voice/${fileName}`);
+      await uploadBytes(storageRef, uploadBuffer);
 
       // Get download URL
       const voiceUrl = await getDownloadURL(storageRef);
