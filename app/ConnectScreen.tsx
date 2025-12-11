@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -16,30 +16,12 @@ import { usePartner } from '../contexts/PartnerContext';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function ConnectScreen({ navigation }: any) {
-  const { connectionStatus, generateInviteCode, acceptInviteCode, loading } = usePartner();
+  const { generateInviteCode, acceptInviteCode, loading } = usePartner();
   const { user } = useAuth();
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [inputCode, setInputCode] = useState('');
   const [generating, setGenerating] = useState(false);
   const [accepting, setAccepting] = useState(false);
-  const hasNavigatedRef = useRef(false);
-
-  useEffect(() => {
-    // If already connected, navigate away (only once)
-    // Check connectionStatus - it's updated immediately after pairing via snapshot listener
-    if (connectionStatus === 'connected') {
-      if (!hasNavigatedRef.current) {
-        hasNavigatedRef.current = true;
-        // Small delay to ensure state is fully updated and alert is dismissed
-        const timeoutId = setTimeout(() => {
-          navigation.replace('Home');
-        }, 1000);
-        return () => clearTimeout(timeoutId);
-      }
-    } else if (connectionStatus !== 'connected') {
-      hasNavigatedRef.current = false;
-    }
-  }, [connectionStatus]);
 
   const handleGenerateInvite = async () => {
     if (!user) {
@@ -86,23 +68,13 @@ export default function ConnectScreen({ navigation }: any) {
     setAccepting(true);
     try {
       await acceptInviteCode(inputCode.trim());
-      // Clear the input code
       setInputCode('');
-      // Reset navigation ref to allow auto-navigation
-      hasNavigatedRef.current = false;
-      // Show success message - navigation will happen automatically via useEffect
-      // But also add fallback navigation in case useEffect doesn't trigger
+      // Navigate directly after successful pairing
       Alert.alert('Success', 'You are now connected with your partner!', [
         {
           text: 'OK',
           onPress: () => {
-            // Fallback: navigate after a delay if useEffect didn't trigger
-            setTimeout(() => {
-              if (!hasNavigatedRef.current) {
-                hasNavigatedRef.current = true;
-                navigation.replace('Home');
-              }
-            }, 500);
+            navigation.replace('Home');
           },
         },
       ]);

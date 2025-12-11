@@ -169,40 +169,9 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
 
     await partnerService.acceptInviteCode(code, user);
     
-    // Refresh user data immediately from Firestore (don't refresh AuthContext to avoid loops)
-    // The snapshot listener will also update, but this ensures immediate update
-    if (user.id) {
-      try {
-        const userDoc = doc(db, 'users', user.id);
-        const docSnapshot = await getDoc(userDoc);
-        if (docSnapshot.exists()) {
-          const userData = docSnapshot.data() as Omit<User, 'id'>;
-          const newPartnerId = userData.partnerId;
-          const newConnectionStatus = userData.connectionStatus || 'unpaired';
-          
-          // Update connection status immediately
-          setConnectionStatus(newConnectionStatus);
-          
-          // Reset refs to allow navigation and loading
-          currentPartnerIdRef.current = null;
-          
-          if (newPartnerId && newConnectionStatus === 'connected') {
-            // Load partner data
-            loadPartner(newPartnerId, user.id);
-          } else {
-            setPartner(null);
-          }
-        }
-      } catch (error) {
-        console.error('Error refreshing user data after pairing:', error);
-        // Snapshot listener will handle the update eventually
-      }
-    }
-    
-    // Refresh AuthContext user data after a delay to avoid immediate re-renders
-    setTimeout(async () => {
-      await refreshUser();
-    }, 500);
+    // The snapshot listener will update connectionStatus automatically
+    // Just refresh AuthContext user data to get updated partnerId
+    await refreshUser();
   };
 
   const breakup = async (): Promise<void> => {
