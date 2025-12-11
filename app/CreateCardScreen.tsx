@@ -50,8 +50,12 @@ export default function CreateCardScreen({ navigation }: any) {
       if (existingRecording) {
         try {
           const status = await existingRecording.getStatusAsync();
-          if (status.isRecording || status.canRecord) {
+          // Stop if recording, unload if prepared or in any state
+          if (status.isRecording) {
             await existingRecording.stopAndUnloadAsync();
+          } else {
+            // If prepared but not recording, just unload
+            await existingRecording.unloadAsync();
           }
         } catch (e) {
           // Ignore errors if already stopped or doesn't exist
@@ -71,6 +75,9 @@ export default function CreateCardScreen({ navigation }: any) {
       setIsRecording(false);
       setRecordingDuration(0);
       setRecordingUri(null);
+      
+      // Small delay to ensure cleanup completes
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       const permission = await Audio.requestPermissionsAsync();
       if (!permission.granted) {
